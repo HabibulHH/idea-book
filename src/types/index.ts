@@ -47,11 +47,48 @@ export interface NonRepeatedTask {
   completedAt?: string;
 }
 
+export interface NewsfeedPost {
+  id: string;
+  user_id: string;
+  title: string;
+  content?: string;
+  url?: string;
+  url_metadata?: {
+    title?: string;
+    description?: string;
+    image?: string;
+    site_name?: string;
+  };
+  post_type: 'link' | 'note' | 'post';
+  created_at: string;
+  updated_at: string;
+  is_archived: boolean;
+  tags?: NewsfeedTag[];
+  comments?: NewsfeedComment[];
+}
+
+export interface NewsfeedComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsfeedTag {
+  id: string;
+  name: string;
+  color: string;
+  created_at: string;
+}
+
 export interface AppData {
   ideas: Idea[];
   executionPipelines: ExecutionPipeline[];
   repeatedTasks: RepeatedTask[];
   nonRepeatedTasks: NonRepeatedTask[];
+  newsfeedPosts: NewsfeedPost[];
   lastUpdated: string;
 }
 

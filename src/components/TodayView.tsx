@@ -190,15 +190,15 @@ export function TodayView({ data, setData }: TodayViewProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Today</h2>
-          <p className="text-gray-600">{new Date().toLocaleDateString('en-US', {
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Today</h2>
+          <p className="text-gray-600 dark:text-gray-400">{new Date().toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric'
           })}</p>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           {todaysTasks.length} {todaysTasks.length === 1 ? 'task' : 'tasks'}
         </div>
       </div>
@@ -207,17 +207,17 @@ export function TodayView({ data, setData }: TodayViewProps) {
         {/* Quick Add Task Input */}
         {!showForm && !editingTask && (
           <div
-            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 cursor-text"
+            className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-text"
             onClick={() => setShowForm(true)}
           >
-            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
-            <span className="text-gray-500">Add a task</span>
+            <div className="w-5 h-5 border-2 border-gray-300 dark:border-gray-500 rounded-full"></div>
+            <span className="text-gray-500 dark:text-gray-400">Add a task</span>
           </div>
         )}
 
         {/* Expanded Form */}
         {(showForm || editingTask) && (
-          <Card className="border-green-200 shadow-sm">
+          <Card className="border-green-200 dark:border-green-700 shadow-sm dark:bg-gray-800">
             <CardContent className="p-4">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Task Type Selection */}
@@ -250,7 +250,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Task name"
-                    className="text-lg font-medium border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                    className="text-lg font-medium border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-200"
                     required
                     autoFocus
                   />
@@ -263,7 +263,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Description"
                     rows={2}
-                    className="border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 resize-none"
+                    className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-200 resize-none"
                   />
                 </div>
 
@@ -328,7 +328,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
 
         {/* Today's Tasks */}
         {todaysTasks.map((task) => (
-          <Card key={task.id}>
+          <Card key={task.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -349,30 +349,30 @@ export function TodayView({ data, setData }: TodayViewProps) {
                         />
                       </Button>
                     )}
-                    <h3 className={`font-semibold ${
-                      isTaskCompleted(task) ? 'line-through text-gray-500' : ''
+                    <h3 className={`font-semibold dark:text-white ${
+                      isTaskCompleted(task) ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white'
                     }`}>
                       {task.title}
                     </h3>
                   </div>
 
                   {task.description && (
-                    <div className="text-sm text-gray-600 mb-2 whitespace-pre-wrap">{task.description}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 whitespace-pre-wrap">{task.description}</div>
                   )}
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {'frequency' in task ? (
                       <>
-                        <Badge variant="outline" className="flex items-center gap-1">
+                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                           <Repeat className="h-3 w-3" />
                           {task.frequency}
                         </Badge>
-                        <Badge variant="outline" className="flex items-center gap-1">
+                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                           <Clock className="h-3 w-3" />
                           Streak: {task.streak}
                         </Badge>
                         {task.lastCompleted && (
-                          <Badge className="bg-green-100 text-green-800">
+                          <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
                             Last: {new Date(task.lastCompleted).toLocaleDateString()}
                           </Badge>
                         )}
@@ -412,6 +412,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
                       setTaskType('frequency' in task ? 'daily' : 'office')
                       setShowForm(true)
                     }}
+                    className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -419,7 +420,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(task)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -430,11 +431,11 @@ export function TodayView({ data, setData }: TodayViewProps) {
         ))}
 
         {todaysTasks.length === 0 && (
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-8 text-center">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-500 mb-2">No tasks for today</p>
-              <p className="text-sm text-gray-400">Add your first task to get started!</p>
+              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+              <p className="text-gray-500 dark:text-gray-400 mb-2">No tasks for today</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Add your first task to get started!</p>
             </CardContent>
           </Card>
         )}

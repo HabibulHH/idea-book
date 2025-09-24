@@ -90,4 +90,25 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
+
+  /* Mobile-specific styles */
+  @media (max-width: 1023px) {
+    .mobile-sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    .mobile-sidebar.open {
+      transform: translateX(0);
+    }
+    
+    .mobile-overlay {
+      backdrop-filter: blur(2px);
+    }
+  }
+
+  /* Prevent body scroll when mobile sidebar is open */
+  .no-scroll {
+    overflow: hidden;
+  }
 }

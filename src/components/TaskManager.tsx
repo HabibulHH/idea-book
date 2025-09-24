@@ -271,7 +271,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
         {tasks.map((task) => (
           <Card
             key={task.id}
-            className={`slide-in hover-lift ${
+            className={`slide-in hover-lift bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 ${
               isLoadingKey(`toggle-${task.id}`) || isLoadingKey(`delete-${task.id}`)
                 ? 'opacity-70 pointer-events-none loading-fade'
                 : ''
@@ -300,32 +300,32 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                         )}
                       </Button>
                     )}
-                    <h3 className={`font-semibold ${
+                    <h3 className={`font-semibold dark:text-white ${
                       type === 'oneTime' && (task as NonRepeatedTask).status === 'completed'
-                        ? 'line-through text-gray-500'
-                        : ''
+                        ? 'line-through text-gray-500 dark:text-gray-400'
+                        : 'text-gray-900 dark:text-white'
                     }`}>
                       {task.title}
                     </h3>
                   </div>
 
                   {task.description && (
-                    <div className="text-sm text-gray-600 mb-2 whitespace-pre-wrap">{task.description}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 whitespace-pre-wrap">{task.description}</div>
                   )}
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {type === 'repeated' && (
                       <>
-                        <Badge variant="outline" className="flex items-center gap-1">
+                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                           <Repeat className="h-3 w-3" />
                           {(task as RepeatedTask).frequency}
                         </Badge>
-                        <Badge variant="outline" className="flex items-center gap-1">
+                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                           <Clock className="h-3 w-3" />
                           Streak: {(task as RepeatedTask).streak}
                         </Badge>
                         {(task as RepeatedTask).lastCompleted && (
-                          <Badge className="bg-green-100 text-green-800">
+                          <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
                             Last: {new Date((task as RepeatedTask).lastCompleted!).toLocaleDateString()}
                           </Badge>
                         )}
@@ -356,6 +356,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleEdit(task)}
+                    className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -363,7 +364,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(task.id)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                     loading={isLoadingKey(`delete-${task.id}`)}
                   >
                     {!isLoadingKey(`delete-${task.id}`) && (
@@ -377,9 +378,9 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
         ))}
 
         {tasks.length === 0 && (
-          <Card>
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-8 text-center">
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 No {type === 'repeated' ? 'daily recurring' : 'one-time'} tasks yet. Create your first one!
               </p>
             </CardContent>
