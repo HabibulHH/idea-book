@@ -5,12 +5,14 @@ import ExecutionPipeline from '@/components/ExecutionPipeline'
 import { TaskManager } from '@/components/TaskManager'
 import { TodayView } from '@/components/TodayView'
 import { NewsFeed } from '@/components/NewsFeed'
+import { Books } from '@/components/Books'
+import People from '@/components/People'
 import { Login } from '@/components/Login'
 import { ConfigModal } from '@/components/ConfigModal'
 import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData, saveData } from '@/lib/storage'
-import { Lightbulb, ArrowRight, Calendar, Briefcase, Download, Upload, Sun, User, Menu, Moon, Newspaper, Settings } from 'lucide-react'
+import { Lightbulb, ArrowRight, Calendar, Briefcase, Download, Upload, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users } from 'lucide-react'
 import { useLoading } from '@/hooks/useLoading'
 
 function App() {
@@ -172,6 +174,8 @@ function App() {
   const navigationItems = [
     { id: 'today', label: 'Today', icon: Sun },
     { id: 'newsfeed', label: 'Newsfeed', icon: Newspaper },
+    { id: 'books', label: 'Books', icon: BookOpen },
+    { id: 'people', label: 'People', icon: Users },
     { id: 'ideas', label: 'Ideas', icon: Lightbulb },
     { id: 'pipeline', label: 'Pipeline', icon: ArrowRight },
     { id: 'daily', label: 'Daily Tasks', icon: Calendar },
@@ -184,6 +188,10 @@ function App() {
         return <TodayView data={appData} setData={setAppData} />
       case 'newsfeed':
         return <NewsFeed data={appData} setData={setAppData} />
+      case 'books':
+        return <Books />
+      case 'people':
+        return <People />
       case 'ideas':
         return <IdeaParkingLot data={appData} setData={setAppData} />
       case 'pipeline':

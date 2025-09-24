@@ -3,6 +3,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* React Select Styles */
+.react-select-container .react-select__control {
+  @apply border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700;
+}
+
+.react-select-container .react-select__control:hover {
+  @apply border-gray-400 dark:border-gray-500;
+}
+
+.react-select-container .react-select__control--is-focused {
+  @apply border-green-500 dark:border-green-400 ring-1 ring-green-500 dark:ring-green-400;
+}
+
+.react-select-container .react-select__multi-value {
+  @apply bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200;
+}
+
+.react-select-container .react-select__multi-value__remove {
+  @apply text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-800;
+}
+
+.react-select-container .react-select__menu {
+  @apply bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600;
+}
+
+.react-select-container .react-select__option {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+.react-select-container .react-select__option--is-focused {
+  @apply bg-green-100 dark:bg-green-800;
+}
+
+.react-select-container .react-select__option--is-selected {
+  @apply bg-green-500 dark:bg-green-600 text-white;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;

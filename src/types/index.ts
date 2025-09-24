@@ -83,12 +83,63 @@ export interface NewsfeedTag {
   created_at: string;
 }
 
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  description?: string;
+  coverImageUrl?: string; // URL to the image stored in Supabase Storage
+  status: 'to-read' | 'reading' | 'completed' | 'abandoned';
+  rating?: number; // 1-5 stars
+  notes?: string;
+  addedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  tags: string[];
+}
+
+export interface Person {
+  id: string;
+  name: string;
+  mobile?: string;
+  email?: string;
+  linkedinUrl?: string;
+  facebookUrl?: string;
+  whatsappUrl?: string;
+  notes?: string;
+  helpfulnessRating?: number; // 1-5 stars
+  createdAt: string;
+  updatedAt: string;
+  tags: string[];
+  skills?: PersonSkill[];
+  connections?: PersonConnection[];
+}
+
+export interface PersonSkill {
+  id: string;
+  personId: string;
+  skillName: string;
+  skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  createdAt: string;
+}
+
+export interface PersonConnection {
+  id: string;
+  personAId: string;
+  personBId: string;
+  relationshipType: 'colleague' | 'friend' | 'family' | 'business_partner' | 'mentor' | 'mentee' | 'client' | 'vendor' | 'other';
+  relationshipNotes?: string;
+  createdAt: string;
+}
+
 export interface AppData {
   ideas: Idea[];
   executionPipelines: ExecutionPipeline[];
   repeatedTasks: RepeatedTask[];
   nonRepeatedTasks: NonRepeatedTask[];
   newsfeedPosts: NewsfeedPost[];
+  books: Book[]; // Add books to your app data
+  people: Person[]; // Add people to your app data
   lastUpdated: string;
 }
 
