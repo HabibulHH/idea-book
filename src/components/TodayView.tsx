@@ -333,20 +333,22 @@ export function TodayView({ data, setData }: TodayViewProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleComplete(task)}
-                      className="p-0 h-6 w-6"
-                    >
-                      <CheckCircle
-                        className={`h-4 w-4 ${
-                          isTaskCompleted(task)
-                            ? 'text-green-600 fill-green-600'
-                            : 'text-gray-400'
-                        }`}
-                      />
-                    </Button>
+                    {!('frequency' in task) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleComplete(task)}
+                        className="p-0 h-6 w-6"
+                      >
+                        <CheckCircle
+                          className={`h-4 w-4 ${
+                            isTaskCompleted(task)
+                              ? 'text-green-600 fill-green-600'
+                              : 'text-gray-400'
+                          }`}
+                        />
+                      </Button>
+                    )}
                     <h3 className={`font-semibold ${
                       isTaskCompleted(task) ? 'line-through text-gray-500' : ''
                     }`}>
@@ -395,6 +397,24 @@ export function TodayView({ data, setData }: TodayViewProps) {
                 </div>
 
                 <div className="flex gap-2 ml-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEditingTask(task)
+                      setFormData({
+                        title: task.title,
+                        description: task.description,
+                        frequency: 'frequency' in task ? task.frequency : 'daily',
+                        deadline: 'frequency' in task ? '' : task.deadline,
+                        priority: 'frequency' in task ? 'medium' : task.priority
+                      })
+                      setTaskType('frequency' in task ? 'daily' : 'office')
+                      setShowForm(true)
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

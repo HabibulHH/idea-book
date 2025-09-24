@@ -281,25 +281,25 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleComplete(task)}
-                      className="p-0 h-6 w-6"
-                      loading={isLoadingKey(`toggle-${task.id}`)}
-                    >
-                      {!isLoadingKey(`toggle-${task.id}`) && (
-                        <CheckCircle
-                          className={`h-4 w-4 ${
-                            type === 'repeated'
-                              ? 'text-green-600'
-                              : (task as NonRepeatedTask).status === 'completed'
+                    {type === 'oneTime' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleComplete(task)}
+                        className="p-0 h-6 w-6"
+                        loading={isLoadingKey(`toggle-${task.id}`)}
+                      >
+                        {!isLoadingKey(`toggle-${task.id}`) && (
+                          <CheckCircle
+                            className={`h-4 w-4 ${
+                              (task as NonRepeatedTask).status === 'completed'
                                 ? 'text-green-600 fill-green-600'
                                 : 'text-gray-400'
-                          }`}
-                        />
-                      )}
-                    </Button>
+                            }`}
+                          />
+                        )}
+                      </Button>
+                    )}
                     <h3 className={`font-semibold ${
                       type === 'oneTime' && (task as NonRepeatedTask).status === 'completed'
                         ? 'line-through text-gray-500'
