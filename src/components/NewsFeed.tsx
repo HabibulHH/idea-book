@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { NewsfeedPost, NewsfeedComment, NewsfeedTag } from '@/types'
+import type { NewsfeedPost, NewsfeedTag } from '@/types'
 import { NewsfeedService } from '@/lib/newsfeedService'
 import { 
   Link, 
@@ -29,11 +29,10 @@ interface NewsFeedProps {
   setData: (data: any) => void
 }
 
-export function NewsFeed({ data, setData }: NewsFeedProps) {
+export function NewsFeed({ data }: NewsFeedProps) {
   const [posts, setPosts] = useState<NewsfeedPost[]>(data.newsfeedPosts || [])
   const [tags, setTags] = useState<NewsfeedTag[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
-  const [selectedPost, setSelectedPost] = useState<NewsfeedPost | null>(null)
   const [newComment, setNewComment] = useState('')
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)

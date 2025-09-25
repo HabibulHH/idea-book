@@ -19,12 +19,12 @@ export class PeopleService {
           )
         `)
         .eq('user_id', user.id)
-        .order('helpfulness_rating', { ascending: false, nullsLast: true })
+        .order('helpfulness_rating', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      return people?.map(this.transformPerson) || []
+      return people?.map(PeopleService.transformPerson) || []
     } catch (error) {
       console.error('Error fetching people:', error)
       throw error
@@ -52,7 +52,7 @@ export class PeopleService {
         .single()
 
       if (error) throw error
-      return person ? this.transformPerson(person) : null
+      return person ? PeopleService.transformPerson(person) : null
     } catch (error) {
       console.error('Error fetching person:', error)
       throw error
@@ -89,7 +89,7 @@ export class PeopleService {
         await this.addSkillsToPerson(person.id, personData.skills)
       }
 
-      return this.transformPerson(person)
+      return PeopleService.transformPerson(person)
     } catch (error) {
       console.error('Error creating person:', error)
       throw error
@@ -131,7 +131,7 @@ export class PeopleService {
         await this.updatePersonSkills(id, personData.skills)
       }
 
-      return this.transformPerson(person)
+      return PeopleService.transformPerson(person)
     } catch (error) {
       console.error('Error updating person:', error)
       throw error
@@ -216,7 +216,7 @@ export class PeopleService {
 
       if (error) throw error
 
-      return this.transformConnection(connection)
+      return PeopleService.transformConnection(connection)
     } catch (error) {
       console.error('Error creating connection:', error)
       throw error
@@ -260,11 +260,11 @@ export class PeopleService {
         `)
         .eq('user_id', user.id)
         .or(`name.ilike.%${query}%,notes.ilike.%${query}%`)
-        .order('helpfulness_rating', { ascending: false, nullsLast: true })
+        .order('helpfulness_rating', { ascending: false, nullsFirst: false })
 
       if (error) throw error
 
-      return people?.map(this.transformPerson) || []
+      return people?.map(PeopleService.transformPerson) || []
     } catch (error) {
       console.error('Error searching people:', error)
       throw error
@@ -289,11 +289,11 @@ export class PeopleService {
         `)
         .eq('user_id', user.id)
         .eq('people_skills.skill_name', skillName)
-        .order('helpfulness_rating', { ascending: false, nullsLast: true })
+        .order('helpfulness_rating', { ascending: false, nullsFirst: false })
 
       if (error) throw error
 
-      return people?.map(this.transformPerson) || []
+      return people?.map(PeopleService.transformPerson) || []
     } catch (error) {
       console.error('Error fetching people by skill:', error)
       throw error
@@ -315,8 +315,8 @@ export class PeopleService {
       createdAt: dbPerson.created_at,
       updatedAt: dbPerson.updated_at,
       tags: dbPerson.tags || [],
-      skills: dbPerson.people_skills?.map(this.transformSkill) || [],
-      connections: dbPerson.people_connections?.map(this.transformConnection) || []
+      skills: dbPerson.people_skills?.map(PeopleService.transformSkill) || [],
+      connections: dbPerson.people_connections?.map(PeopleService.transformConnection) || []
     }
   }
 

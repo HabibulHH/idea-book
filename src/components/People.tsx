@@ -6,10 +6,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import ReactSelect from 'react-select'
 import { PeopleService, SKILL_CATEGORIES, RELATIONSHIP_TYPES } from '@/lib/peopleService'
-import type { Person, PersonSkill, PersonConnection } from '@/types'
+import type { Person } from '@/types'
 import { 
   Plus, 
   Search, 
@@ -18,11 +17,7 @@ import {
   Star, 
   Phone, 
   Mail, 
-  Linkedin, 
-  Facebook, 
-  MessageCircle,
   Users,
-  Filter,
   X,
   Save,
   UserPlus
@@ -32,7 +27,7 @@ export default function People() {
   const [people, setPeople] = useState<Person[]>([])
   const [filteredPeople, setFilteredPeople] = useState<Person[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedSkill, setSelectedSkill] = useState('')
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showConnectionModal, setShowConnectionModal] = useState(false)
@@ -93,14 +88,14 @@ export default function People() {
       )
     }
 
-    if (selectedSkill) {
+    if (selectedSkills.length > 0) {
       filtered = filtered.filter(person =>
-        person.skills?.some(skill => skill.skillName === selectedSkill)
+        person.skills?.some(skill => selectedSkills.includes(skill.skillName))
       )
     }
 
     setFilteredPeople(filtered)
-  }, [people, searchQuery, selectedSkill])
+  }, [people, searchQuery, selectedSkills])
 
   const loadPeople = async () => {
     try {
@@ -122,8 +117,11 @@ export default function People() {
       const personData = {
         ...formData,
         skills: formData.skills.map(skill => ({
+          id: crypto.randomUUID(),
+          personId: '', // Will be set by the service
           skillName: skill.skillName,
-          skillLevel: skill.skillLevel as 'beginner' | 'intermediate' | 'advanced' | 'expert'
+          skillLevel: skill.skillLevel as 'beginner' | 'intermediate' | 'advanced' | 'expert',
+          createdAt: new Date().toISOString()
         }))
       }
       await PeopleService.createPerson(personData)
@@ -144,8 +142,11 @@ export default function People() {
       const personData = {
         ...formData,
         skills: formData.skills.map(skill => ({
+          id: crypto.randomUUID(),
+          personId: editingPerson.id,
           skillName: skill.skillName,
-          skillLevel: skill.skillLevel as 'beginner' | 'intermediate' | 'advanced' | 'expert'
+          skillLevel: skill.skillLevel as 'beginner' | 'intermediate' | 'advanced' | 'expert',
+          createdAt: new Date().toISOString()
         }))
       }
       await PeopleService.updatePerson(editingPerson.id, personData)
@@ -273,80 +274,78 @@ export default function People() {
   }
 
   const renderPersonCard = (person: Person) => (
-    <Card key={person.id} className="p-6 hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {person.name}
-          </h3>
-          {person.helpfulnessRating && (
-            <div className="flex items-center gap-1 mt-1">
-              {renderStars(person.helpfulnessRating)}
-              <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
-                ({person.helpfulnessRating}/5)
-              </span>
-            </div>
-          )}
+    <Card key={person.id} className="p-6 hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      {/* Header Section */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start gap-4">
+          {/* Profile Picture */}
+          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+            {person.name.charAt(0).toUpperCase()}
+          </div>
+          
+          {/* Name and Date */}
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              {person.name}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {new Date(person.createdAt).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              })}
+            </p>
+          </div>
         </div>
+        
+        {/* Options Menu */}
         <div className="flex gap-2">
           <Button
             onClick={() => openEditModal(person)}
-            variant="outline"
+            variant="ghost"
             size="sm"
+            className="p-2"
           >
             <Edit className="h-4 w-4" />
           </Button>
           <Button
             onClick={() => handleDeletePerson(person.id)}
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="text-red-600 hover:text-red-700"
+            className="p-2 text-red-600 hover:text-red-700"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
+      {/* Divider */}
+      <div className="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
+
       {/* Contact Information */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-3 mb-4">
         {person.mobile && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Phone className="h-4 w-4" />
-            <a href={`tel:${person.mobile}`} className="hover:text-blue-600">
+          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+            <Phone className="h-4 w-4 text-gray-400" />
+            <a href={`tel:${person.mobile}`} className="hover:text-green-600 transition-colors">
               {person.mobile}
             </a>
           </div>
         )}
         {person.email && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Mail className="h-4 w-4" />
-            <a href={`mailto:${person.email}`} className="hover:text-blue-600">
+          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+            <Mail className="h-4 w-4 text-gray-400" />
+            <a href={`mailto:${person.email}`} className="hover:text-green-600 transition-colors">
               {person.email}
             </a>
           </div>
         )}
-        {person.linkedinUrl && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Linkedin className="h-4 w-4" />
-            <a href={person.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
-              LinkedIn Profile
-            </a>
-          </div>
-        )}
-        {person.facebookUrl && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Facebook className="h-4 w-4" />
-            <a href={person.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
-              Facebook Profile
-            </a>
-          </div>
-        )}
-        {person.whatsappUrl && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <MessageCircle className="h-4 w-4" />
-            <a href={person.whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
-              WhatsApp
-            </a>
+        
+        {/* Partnership/Relationship Status */}
+        {person.connections && person.connections.length > 0 && (
+          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+            <Users className="h-4 w-4 text-gray-400" />
+            <span>Partnership</span>
           </div>
         )}
       </div>
@@ -354,44 +353,30 @@ export default function People() {
       {/* Skills */}
       {person.skills && person.skills.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Skills</h4>
           <div className="flex flex-wrap gap-2">
-            {person.skills.map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {skill.skillName} ({skill.skillLevel})
+            {person.skills.slice(0, 3).map((skill, index) => (
+              <Badge key={index} variant="secondary" className="text-xs bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">
+                {skill.skillName}
               </Badge>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tags */}
-      {person.tags && person.tags.length > 0 && (
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {person.tags.map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {tag}
+            {person.skills.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{person.skills.length - 3} more
               </Badge>
-            ))}
+            )}
           </div>
         </div>
       )}
 
-      {/* Notes */}
-      {person.notes && (
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          <p className="line-clamp-3">{person.notes}</p>
-        </div>
-      )}
-
-      {/* Connections */}
-      {person.connections && person.connections.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Users className="h-4 w-4" />
-            <span>{person.connections.length} connection(s)</span>
+      {/* Helpfulness Rating */}
+      {person.helpfulnessRating && person.helpfulnessRating > 0 && (
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {renderStars(person.helpfulnessRating)}
           </div>
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            ({person.helpfulnessRating}/5)
+          </span>
         </div>
       )}
     </Card>
@@ -448,20 +433,46 @@ export default function People() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Select
-            value={selectedSkill}
-            onValueChange={setSelectedSkill}
-          >
-            <option value="">All Skills</option>
-            {SKILL_CATEGORIES.map(skill => (
-              <option key={skill} value={skill}>{skill}</option>
-            ))}
-          </Select>
-          {(searchQuery || selectedSkill) && (
+          <div className="min-w-[200px]">
+            <ReactSelect
+              isMulti
+              options={skillOptions}
+              value={selectedSkills.map(skill => ({
+                value: skill,
+                label: skill.charAt(0).toUpperCase() + skill.slice(1)
+              }))}
+              onChange={(selectedOptions: any) => {
+                const skills = selectedOptions ? selectedOptions.map((option: any) => option.value) : []
+                setSelectedSkills(skills)
+              }}
+              placeholder="Filter by skills..."
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: '40px',
+                  borderColor: '#d1d5db',
+                  '&:hover': {
+                    borderColor: '#9ca3af'
+                  }
+                }),
+                multiValue: (base) => ({
+                  ...base,
+                  backgroundColor: '#f3f4f6'
+                }),
+                multiValueLabel: (base) => ({
+                  ...base,
+                  color: '#374151'
+                })
+              }}
+            />
+          </div>
+          {(searchQuery || selectedSkills.length > 0) && (
             <Button
               onClick={() => {
                 setSearchQuery('')
-                setSelectedSkill('')
+                setSelectedSkills([])
               }}
               variant="outline"
               size="sm"
@@ -487,7 +498,7 @@ export default function People() {
             No people found
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {searchQuery || selectedSkill 
+            {searchQuery || selectedSkills.length > 0
               ? 'Try adjusting your search criteria'
               : 'Start by adding your first contact'
             }
@@ -1093,3 +1104,5 @@ export default function People() {
     </div>
   )
 }
+
+

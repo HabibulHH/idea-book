@@ -38,12 +38,18 @@ export class NewsfeedService {
 
     // Apply tag filter
     if (filters.tags && filters.tags.length > 0) {
-      query = query.in('id', 
-        supabase
-          .from('newsfeed_post_tags')
-          .select('post_id')
-          .in('tag_id', filters.tags)
-      )
+      const { data: tagPostIds } = await supabase
+        .from('newsfeed_post_tags')
+        .select('post_id')
+        .in('tag_id', filters.tags)
+      
+      if (tagPostIds && tagPostIds.length > 0) {
+        const postIds = tagPostIds.map(pt => pt.post_id)
+        query = query.in('id', postIds)
+      } else {
+        // If no posts match the tags, return empty result
+        query = query.eq('id', 'no-match')
+      }
     }
 
     const { data, error } = await query
@@ -58,7 +64,7 @@ export class NewsfeedService {
     return data?.map(post => ({
       ...post,
       comments: post.newsfeed_comments || [],
-      tags: post.newsfeed_post_tags?.map(pt => pt.newsfeed_tags) || []
+      tags: post.newsfeed_post_tags?.map((pt: any) => pt.newsfeed_tags) || []
     })) || []
   }
 

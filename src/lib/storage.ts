@@ -124,6 +124,9 @@ export const loadData = async (): Promise<AppData> => {
     executionPipelines: [],
     repeatedTasks: [],
     nonRepeatedTasks: [],
+    newsfeedPosts: [],
+    books: [],
+    people: [],
     lastUpdated: new Date().toISOString(),
   };
 };

@@ -22,7 +22,7 @@ export default function IdeaParkingLot({ data, setData }: IdeaParkingLotProps) {
     tags: '',
   });
 
-  const handleAddIdea = () => {
+  const handleAddIdea = async () => {
     if (!newIdea.title.trim()) return;
 
     const tags = newIdea.tags
@@ -30,28 +30,28 @@ export default function IdeaParkingLot({ data, setData }: IdeaParkingLotProps) {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
 
-    const updatedData = addIdea(data, {
+    const updatedData = await addIdea(data, {
       ...newIdea,
       tags,
       status: 'parking',
     });
 
     setData(updatedData);
-    saveData(updatedData);
+    await saveData(updatedData);
     setNewIdea({ title: '', description: '', priority: 'medium', tags: '' });
     setShowAddForm(false);
   };
 
-  const handleMoveToPipeline = (ideaId: string) => {
+  const handleMoveToPipeline = async (ideaId: string) => {
     const updatedData = addExecutionPipeline(data, ideaId);
     setData(updatedData);
-    saveData(updatedData);
+    await saveData(updatedData);
   };
 
-  const handleDeleteIdea = (ideaId: string) => {
-    const updatedData = deleteIdea(data, ideaId);
+  const handleDeleteIdea = async (ideaId: string) => {
+    const updatedData = await deleteIdea(data, ideaId);
     setData(updatedData);
-    saveData(updatedData);
+    await saveData(updatedData);
   };
 
   const parkingIdeas = data.ideas.filter(idea => idea.status === 'parking');

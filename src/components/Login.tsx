@@ -3,17 +3,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Lock, User, AlertCircle } from 'lucide-react'
+import { Lock, AlertCircle, Mail } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 interface LoginProps {
-  onLogin: (username: string, password: string) => boolean
+  onLogin: () => void
 }
 
 export function Login({ onLogin }: LoginProps) {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,12 +23,23 @@ export function Login({ onLogin }: LoginProps) {
     setIsLoading(true)
 
     try {
-      const isValid = onLogin(username, password)
-      if (!isValid) {
-        setError('Invalid username or password')
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        })
+        if (error) throw error
+        setError('Check your email for the confirmation link!')
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (error) throw error
+        onLogin()
       }
-    } catch (err) {
-      setError('Login failed. Please try again.')
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -49,17 +62,17 @@ export function Login({ onLogin }: LoginProps) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Username
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Email
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   className="pl-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-200"
                   required
                   disabled={isLoading}
@@ -96,11 +109,21 @@ export function Login({ onLogin }: LoginProps) {
             <Button
               type="submit"
               className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
-              disabled={isLoading || !username.trim() || !password.trim()}
+              disabled={isLoading || !email.trim() || !password.trim()}
               loading={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? (isSignUp ? 'Creating account...' : 'Signing in...') : (isSignUp ? 'Sign Up' : 'Sign In')}
             </Button>
+            
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-green-600 dark:text-green-400 hover:underline"
+              >
+                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+              </button>
+            </div>
           </form>
         </CardContent>
       </Card>

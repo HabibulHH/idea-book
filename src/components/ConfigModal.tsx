@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import type { NewsfeedTag } from '@/types'
 import { NewsfeedService } from '@/lib/newsfeedService'
 import { 
@@ -14,7 +13,6 @@ import {
   Tag, 
   Save,
   X,
-  Palette
 } from 'lucide-react'
 import { useLoading } from '@/hooks/useLoading'
 

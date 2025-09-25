@@ -12,6 +12,7 @@ import { ConfigModal } from '@/components/ConfigModal'
 import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData, saveData } from '@/lib/storage'
+import { supabase } from '@/lib/supabase'
 import { Lightbulb, ArrowRight, Calendar, Briefcase, Download, Upload, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users } from 'lucide-react'
 import { useLoading } from '@/hooks/useLoading'
 
@@ -19,21 +20,35 @@ function App() {
   const [appData, setAppData] = useState<AppData>(data as AppData)
   const [activeSection, setActiveSection] = useState('today')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const { isLoadingKey, withLoading } = useLoading()
 
-  // Environment variables for login credentials
-  const LOGIN_USERNAME = import.meta.env.VITE_LOGIN_USERNAME || 'admin'
-  const LOGIN_PASSWORD = import.meta.env.VITE_LOGIN_PASSWORD || 'password123'
-
-  // Check if user is already authenticated (from localStorage)
+  // Check Supabase auth state
   useEffect(() => {
-    const authStatus = localStorage.getItem('isAuthenticated')
-    if (authStatus === 'true') {
-      setIsAuthenticated(true)
-    }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) {
+          setIsAuthenticated(true)
+          setUser(session.user)
+        } else {
+          setIsAuthenticated(false)
+          setUser(null)
+        }
+      }
+    )
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setIsAuthenticated(true)
+        setUser(session.user)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   // Initialize theme from localStorage
@@ -62,18 +77,15 @@ function App() {
     }
   }, [isMobileSidebarOpen])
 
-  const handleLogin = (username: string, password: string): boolean => {
-    if (username === LOGIN_USERNAME && password === LOGIN_PASSWORD) {
-      setIsAuthenticated(true)
-      localStorage.setItem('isAuthenticated', 'true')
-      return true
-    }
-    return false
+  const handleLogin = () => {
+    // This will be called by the Login component after successful Supabase auth
+    // The auth state change listener will handle setting isAuthenticated
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
     setIsAuthenticated(false)
-    localStorage.removeItem('isAuthenticated')
+    setUser(null)
   }
 
   const toggleMobileSidebar = () => {
@@ -341,8 +353,8 @@ function App() {
               <User className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{LOGIN_USERNAME}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{LOGIN_USERNAME}@selfmanager.com</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.email || 'User'}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
             </div>
           </div>
           

@@ -116,6 +116,9 @@ const convertDbToAppTypes = (dbData: any): AppData => {
       createdAt: task.created_at,
       completedAt: task.completed_at
     })),
+    newsfeedPosts: dbData.newsfeed_posts || [],
+    books: dbData.books || [],
+    people: dbData.people || [],
     lastUpdated: new Date().toISOString()
   }
 }
@@ -170,6 +173,9 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
       executionPipelines: [],
       repeatedTasks: [],
       nonRepeatedTasks: [],
+      newsfeedPosts: [],
+      books: [],
+      people: [],
       lastUpdated: new Date().toISOString()
     }
   }
