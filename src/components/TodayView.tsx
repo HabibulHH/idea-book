@@ -138,22 +138,30 @@ export function TodayView({ data, setData }: TodayViewProps) {
 
   const handleDelete = async (task: RepeatedTask | NonRepeatedTask) => {
     try {
+      // Check if ID is a valid UUID before attempting Supabase deletion
+      const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id)
+      
+      if (isValidUUID) {
+        if ('frequency' in task) {
+          // Delete from Supabase
+          const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
+          await deleteRepeatedTaskFromSupabase(task.id)
+        } else {
+          // Delete from Supabase
+          const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
+          await deleteNonRepeatedTaskFromSupabase(task.id)
+        }
+      } else {
+        console.log('Skipping Supabase deletion for non-UUID task:', task.id)
+      }
+      
+      // Always update local state regardless of Supabase deletion
       if ('frequency' in task) {
-        // Delete from Supabase
-        const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
-        await deleteRepeatedTaskFromSupabase(task.id)
-        
-        // Update local state
         setData({
           ...data,
           repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
         })
       } else {
-        // Delete from Supabase
-        const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
-        await deleteNonRepeatedTaskFromSupabase(task.id)
-        
-        // Update local state
         setData({
           ...data,
           nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
@@ -161,7 +169,18 @@ export function TodayView({ data, setData }: TodayViewProps) {
       }
     } catch (error) {
       console.error('Error deleting task:', error)
-      // You might want to show an error message to the user here
+      // Still update local state even if Supabase deletion fails
+      if ('frequency' in task) {
+        setData({
+          ...data,
+          repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
+        })
+      } else {
+        setData({
+          ...data,
+          nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
+        })
+      }
     }
   }
 

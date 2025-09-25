@@ -107,17 +107,27 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
   const handleDelete = async (id: string) => {
     await withLoading(async () => {
       try {
-        if (type === 'repeated') {
-          const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
-          await deleteRepeatedTaskFromSupabase(id)
+        // Check if ID is a valid UUID before attempting Supabase deletion
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+        
+        if (isValidUUID) {
+          if (type === 'repeated') {
+            const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
+            await deleteRepeatedTaskFromSupabase(id)
+          } else {
+            const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
+            await deleteNonRepeatedTaskFromSupabase(id)
+          }
         } else {
-          const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
-          await deleteNonRepeatedTaskFromSupabase(id)
+          console.log('Skipping Supabase deletion for non-UUID task:', id)
         }
+        
+        // Always remove from local state regardless of Supabase deletion
         onUpdateTasks(tasks.filter(t => t.id !== id))
       } catch (error) {
         console.error('Error deleting task:', error)
-        // You might want to show an error message to the user here
+        // Still remove from local state even if Supabase deletion fails
+        onUpdateTasks(tasks.filter(t => t.id !== id))
       }
     }, `delete-${id}`)
   }

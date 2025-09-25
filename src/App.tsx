@@ -146,14 +146,33 @@ function App() {
           )
         }
         
-        setAppData(cleanedData)
+        // Convert old numeric IDs to UUIDs for tasks that need it
+        const migratedData = {
+          ...cleanedData,
+          nonRepeatedTasks: cleanedData.nonRepeatedTasks.map(task => ({
+            ...task,
+            id: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id) 
+              ? task.id 
+              : crypto.randomUUID()
+          })),
+          repeatedTasks: cleanedData.repeatedTasks.map(task => ({
+            ...task,
+            id: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id) 
+              ? task.id 
+              : crypto.randomUUID()
+          }))
+        }
+        
+        setAppData(migratedData)
         
         // Save cleaned data back to Supabase to remove duplicates from database
-        if (cleanedData.nonRepeatedTasks.length !== loadedData.nonRepeatedTasks.length ||
-            cleanedData.repeatedTasks.length !== loadedData.repeatedTasks.length) {
-          console.log('Removing duplicates from database...')
+        if (migratedData.nonRepeatedTasks.length !== loadedData.nonRepeatedTasks.length ||
+            migratedData.repeatedTasks.length !== loadedData.repeatedTasks.length ||
+            migratedData.nonRepeatedTasks.some(task => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id)) ||
+            migratedData.repeatedTasks.some(task => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id))) {
+          console.log('Saving cleaned and migrated data to database...')
           try {
-            await saveData(cleanedData)
+            await saveData(migratedData)
           } catch (error) {
             console.error('Error saving cleaned data:', error)
           }
