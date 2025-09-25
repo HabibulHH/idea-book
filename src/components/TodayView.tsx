@@ -28,10 +28,13 @@ export function TodayView({ data, setData }: TodayViewProps) {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Get today's tasks
+  // Get today's tasks - only show tasks that are due today or overdue
   const todaysTasks = [
-    // Daily tasks that are active
-    ...data.repeatedTasks.filter(task => task.isActive),
+    // Daily tasks that are active and not completed today
+    ...data.repeatedTasks.filter(task => 
+      task.isActive && 
+      task.lastCompleted !== today
+    ),
     // Office tasks due today or overdue
     ...data.nonRepeatedTasks.filter(task =>
       task.status !== 'completed' &&
@@ -133,17 +136,32 @@ export function TodayView({ data, setData }: TodayViewProps) {
     }
   }
 
-  const handleDelete = (task: RepeatedTask | NonRepeatedTask) => {
-    if ('frequency' in task) {
-      setData({
-        ...data,
-        repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
-      })
-    } else {
-      setData({
-        ...data,
-        nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
-      })
+  const handleDelete = async (task: RepeatedTask | NonRepeatedTask) => {
+    try {
+      if ('frequency' in task) {
+        // Delete from Supabase
+        const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
+        await deleteRepeatedTaskFromSupabase(task.id)
+        
+        // Update local state
+        setData({
+          ...data,
+          repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
+        })
+      } else {
+        // Delete from Supabase
+        const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
+        await deleteNonRepeatedTaskFromSupabase(task.id)
+        
+        // Update local state
+        setData({
+          ...data,
+          nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
+        })
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error)
+      // You might want to show an error message to the user here
     }
   }
 
@@ -197,6 +215,9 @@ export function TodayView({ data, setData }: TodayViewProps) {
             month: 'long',
             day: 'numeric'
           })}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Tasks due today or overdue • Use Daily Tasks and Office Tasks sections for full management
+          </p>
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
           {todaysTasks.length} {todaysTasks.length === 1 ? 'task' : 'tasks'}

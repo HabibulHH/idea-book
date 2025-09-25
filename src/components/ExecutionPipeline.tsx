@@ -20,16 +20,16 @@ export default function ExecutionPipeline({ data, setData }: ExecutionPipelinePr
     return { ...pipeline, idea };
   }).filter(pipeline => pipeline.idea);
 
-  const handleStageUpdate = (pipelineId: string, newStage: number) => {
+  const handleStageUpdate = async (pipelineId: string, newStage: number) => {
     const updatedData = updatePipelineStage(data, pipelineId, newStage);
     setData(updatedData);
-    saveData(updatedData);
+    await saveData(updatedData);
   };
 
-  const handleCompletePipeline = (ideaId: string) => {
+  const handleCompletePipeline = async (ideaId: string) => {
     const updatedData = updateIdea(data, ideaId, { status: 'completed' });
     setData(updatedData);
-    saveData(updatedData);
+    await saveData(updatedData);
   };
 
   const handleNotesEdit = (pipelineId: string, currentNotes: string) => {
@@ -37,7 +37,7 @@ export default function ExecutionPipeline({ data, setData }: ExecutionPipelinePr
     setNotes(currentNotes);
   };
 
-  const handleNotesSave = (pipelineId: string) => {
+  const handleNotesSave = async (pipelineId: string) => {
     const updatedData = {
       ...data,
       executionPipelines: data.executionPipelines.map(pipeline =>
@@ -47,7 +47,7 @@ export default function ExecutionPipeline({ data, setData }: ExecutionPipelinePr
       ),
     };
     setData(updatedData);
-    saveData(updatedData);
+    await saveData(updatedData);
     setEditingNotes(null);
     setNotes('');
   };

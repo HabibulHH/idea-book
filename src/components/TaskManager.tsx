@@ -46,7 +46,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
     await withLoading(async () => {
       if (type === 'repeated') {
         const newTask: RepeatedTask = {
-          id: editingTask?.id || Date.now().toString(),
+          id: editingTask?.id || crypto.randomUUID(),
           title: formData.title,
           description: formData.description,
           frequency: formData.frequency,
@@ -59,11 +59,15 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
         if (editingTask) {
           onUpdateTasks((tasks as RepeatedTask[]).map(t => t.id === editingTask.id ? newTask : t))
         } else {
-          onUpdateTasks([...(tasks as RepeatedTask[]), newTask])
+          // Check if task already exists to prevent duplicates
+          const existingTask = (tasks as RepeatedTask[]).find(t => t.id === newTask.id)
+          if (!existingTask) {
+            onUpdateTasks([...(tasks as RepeatedTask[]), newTask])
+          }
         }
       } else {
         const newTask: NonRepeatedTask = {
-          id: editingTask?.id || Date.now().toString(),
+          id: editingTask?.id || crypto.randomUUID(),
           title: formData.title,
           description: formData.description,
           deadline: formData.deadline,
@@ -76,7 +80,11 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
         if (editingTask) {
           onUpdateTasks((tasks as NonRepeatedTask[]).map(t => t.id === editingTask.id ? newTask : t))
         } else {
-          onUpdateTasks([...(tasks as NonRepeatedTask[]), newTask])
+          // Check if task already exists to prevent duplicates
+          const existingTask = (tasks as NonRepeatedTask[]).find(t => t.id === newTask.id)
+          if (!existingTask) {
+            onUpdateTasks([...(tasks as NonRepeatedTask[]), newTask])
+          }
         }
       }
 
@@ -98,7 +106,19 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
 
   const handleDelete = async (id: string) => {
     await withLoading(async () => {
-      onUpdateTasks(tasks.filter(t => t.id !== id))
+      try {
+        if (type === 'repeated') {
+          const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
+          await deleteRepeatedTaskFromSupabase(id)
+        } else {
+          const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
+          await deleteNonRepeatedTaskFromSupabase(id)
+        }
+        onUpdateTasks(tasks.filter(t => t.id !== id))
+      } catch (error) {
+        console.error('Error deleting task:', error)
+        // You might want to show an error message to the user here
+      }
     }, `delete-${id}`)
   }
 
@@ -160,8 +180,31 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
         <h2 className="text-2xl font-bold">
           {type === 'repeated' ? 'Daily Recurring Tasks' : 'One-Time Tasks'}
         </h2>
-        <div className="text-sm text-gray-500">
-          {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Remove duplicates based on content
+              const uniqueTasks = tasks.filter((task, index, self) => 
+                index === self.findIndex(t => 
+                  t.title === task.title && 
+                  t.description === task.description &&
+                  (type === 'repeated' ? 
+                    (t as any).frequency === (task as any).frequency :
+                    (t as any).deadline === (task as any).deadline
+                  )
+                )
+              )
+              onUpdateTasks(uniqueTasks)
+            }}
+            className="text-xs"
+          >
+            Clean Duplicates
+          </Button>
+          <div className="text-sm text-gray-500">
+            {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+          </div>
         </div>
       </div>
 

@@ -115,7 +115,49 @@ function App() {
     const loadAppData = async () => {
       try {
         const loadedData = await loadData()
-        setAppData(loadedData)
+        
+        // Deduplicate tasks to prevent duplicates
+        const deduplicatedData = {
+          ...loadedData,
+          nonRepeatedTasks: loadedData.nonRepeatedTasks.filter((task, index, self) => 
+            index === self.findIndex(t => t.id === task.id)
+          ),
+          repeatedTasks: loadedData.repeatedTasks.filter((task, index, self) => 
+            index === self.findIndex(t => t.id === task.id)
+          )
+        }
+        
+        // Additional cleanup: remove tasks with identical content (title + description)
+        const cleanedData = {
+          ...deduplicatedData,
+          nonRepeatedTasks: deduplicatedData.nonRepeatedTasks.filter((task, index, self) => 
+            index === self.findIndex(t => 
+              t.title === task.title && 
+              t.description === task.description && 
+              t.deadline === task.deadline
+            )
+          ),
+          repeatedTasks: deduplicatedData.repeatedTasks.filter((task, index, self) => 
+            index === self.findIndex(t => 
+              t.title === task.title && 
+              t.description === task.description && 
+              t.frequency === task.frequency
+            )
+          )
+        }
+        
+        setAppData(cleanedData)
+        
+        // Save cleaned data back to Supabase to remove duplicates from database
+        if (cleanedData.nonRepeatedTasks.length !== loadedData.nonRepeatedTasks.length ||
+            cleanedData.repeatedTasks.length !== loadedData.repeatedTasks.length) {
+          console.log('Removing duplicates from database...')
+          try {
+            await saveData(cleanedData)
+          } catch (error) {
+            console.error('Error saving cleaned data:', error)
+          }
+        }
       } catch (error) {
         console.error('Error loading data:', error)
         // Fall back to default data if loading fails

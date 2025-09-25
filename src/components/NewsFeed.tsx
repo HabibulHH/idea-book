@@ -29,8 +29,8 @@ interface NewsFeedProps {
   setData: (data: any) => void
 }
 
-export function NewsFeed({ data }: NewsFeedProps) {
-  const [posts, setPosts] = useState<NewsfeedPost[]>(data.newsfeedPosts || [])
+export function NewsFeed({ }: NewsFeedProps) {
+  const [posts, setPosts] = useState<NewsfeedPost[]>([])
   const [tags, setTags] = useState<NewsfeedTag[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [newComment, setNewComment] = useState('')
@@ -77,30 +77,48 @@ export function NewsFeed({ data }: NewsFeedProps) {
   }, [hasMore, loading])
 
   const loadPosts = async (reset = true) => {
-    const filters = {
-      search: searchQuery,
-      tags: selectedTags,
-      post_type: selectedPostType || undefined
-    }
+    // Prevent multiple simultaneous calls
+    if (loading) return
     
-    const fetchedPosts = await NewsfeedService.getPosts(reset ? 0 : page, 10, filters)
+    setLoading(true)
+    
+    try {
+      const filters = {
+        search: searchQuery,
+        tags: selectedTags,
+        post_type: selectedPostType || undefined
+      }
+      
+      const fetchedPosts = await NewsfeedService.getPosts(reset ? 0 : page, 10, filters)
     
     if (reset) {
-      setPosts(fetchedPosts)
+      // Ensure unique posts even on reset
+      const uniquePosts = fetchedPosts.filter((post, index, self) => 
+        index === self.findIndex(p => p.id === post.id)
+      )
+      setPosts(uniquePosts)
       setPage(0)
     } else {
-      setPosts(prev => [...prev, ...fetchedPosts])
+      setPosts(prev => {
+        // Create a map to track existing post IDs
+        const existingIds = new Set(prev.map(post => post.id))
+        // Only add posts that don't already exist
+        const newPosts = fetchedPosts.filter(post => !existingIds.has(post.id))
+        return [...prev, ...newPosts]
+      })
       setPage(prev => prev + 1)
     }
     setHasMore(fetchedPosts.length === 10)
+    } catch (error) {
+      console.error('Error loading posts:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const loadMorePosts = async () => {
     if (loading) return
-    
-    setLoading(true)
     await loadPosts(false)
-    setLoading(false)
   }
 
   const loadTags = async () => {
