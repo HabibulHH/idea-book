@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
-import { Select } from './ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Badge } from './ui/badge'
 import type { Book } from '@/types'
 import { 
@@ -184,11 +184,16 @@ export const Books: React.FC = () => {
             className="max-w-md"
           />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <option value="all">All Status</option>
-            <option value="to-read">To Read</option>
-            <option value="reading">Reading</option>
-            <option value="completed">Completed</option>
-            <option value="abandoned">Abandoned</option>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="to-read">To Read</SelectItem>
+              <SelectItem value="reading">Reading</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="abandoned">Abandoned</SelectItem>
+            </SelectContent>
           </Select>
         </div>
       </div>
@@ -334,10 +339,15 @@ export const Books: React.FC = () => {
                     value={newBook.status || 'to-read'} 
                     onValueChange={(value: Book['status']) => setNewBook({ ...newBook, status: value })}
                   >
-                    <option value="to-read">To Read</option>
-                    <option value="reading">Reading</option>
-                    <option value="completed">Completed</option>
-                    <option value="abandoned">Abandoned</option>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="to-read">To Read</SelectItem>
+                      <SelectItem value="reading">Reading</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="abandoned">Abandoned</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 
@@ -472,10 +482,15 @@ export const Books: React.FC = () => {
                     value={selectedBook.status} 
                     onValueChange={(value: Book['status']) => handleStatusChange(selectedBook.id, value)}
                   >
-                    <option value="to-read">To Read</option>
-                    <option value="reading">Reading</option>
-                    <option value="completed">Completed</option>
-                    <option value="abandoned">Abandoned</option>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="to-read">To Read</SelectItem>
+                      <SelectItem value="reading">Reading</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="abandoned">Abandoned</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
 
