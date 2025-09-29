@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import type { RepeatedTask, NonRepeatedTask, AppData } from '@/types'
+import type { RepeatedTask, NonRepeatedTask, RegularTask, AppData } from '@/types'
 import { Trash2, Edit, CheckCircle, Calendar, Clock, Repeat, Briefcase } from 'lucide-react'
+import { deleteRepeatedTaskFromSupabase, deleteNonRepeatedTaskFromSupabase, deleteRegularTaskFromSupabase } from '@/lib/storage'
 
 interface TodayViewProps {
   data: AppData
@@ -15,8 +16,10 @@ interface TodayViewProps {
 
 export function TodayView({ data, setData }: TodayViewProps) {
   const [showForm, setShowForm] = useState(false)
-  const [taskType, setTaskType] = useState<'daily' | 'office'>('daily')
-  const [editingTask, setEditingTask] = useState<RepeatedTask | NonRepeatedTask | null>(null)
+  const [taskType, setTaskType] = useState<'daily' | 'office' | 'regular'>('daily')
+  const [editingTask, setEditingTask] = useState<RepeatedTask | NonRepeatedTask | RegularTask | null>(null)
+  const [sortBy, setSortBy] = useState<'priority' | 'created' | 'deadline' | 'type'>('priority')
+  const [filterBy, setFilterBy] = useState<'all' | 'daily' | 'office' | 'regular'>('all')
 
   const [formData, setFormData] = useState({
     title: '',
@@ -28,19 +31,49 @@ export function TodayView({ data, setData }: TodayViewProps) {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Get today's tasks - only show tasks that are due today or overdue
-  const todaysTasks = [
+  // Get all tasks with type information
+  const allTasks = [
     // Daily tasks that are active and not completed today
     ...data.repeatedTasks.filter(task => 
       task.isActive && 
       task.lastCompleted !== today
-    ),
+    ).map(task => ({ ...task, taskType: 'daily' as const })),
     // Office tasks due today or overdue
     ...data.nonRepeatedTasks.filter(task =>
       task.status !== 'completed' &&
       (task.deadline === today || (task.deadline && new Date(task.deadline) <= new Date()))
-    )
+    ).map(task => ({ ...task, taskType: 'office' as const })),
+    // Regular tasks that are active
+    ...(data.regularTasks || []).filter(task => 
+      task.status !== 'completed'
+    ).map(task => ({ ...task, taskType: 'regular' as const }))
   ]
+
+  // Filter tasks by type
+  const filteredTasks = filterBy === 'all' 
+    ? allTasks 
+    : allTasks.filter(task => task.taskType === filterBy)
+
+  // Sort tasks
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    switch (sortBy) {
+      case 'priority':
+        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 }
+        const aPriority = 'priority' in a ? priorityOrder[a.priority] || 0 : 0
+        const bPriority = 'priority' in b ? priorityOrder[b.priority] || 0 : 0
+        return bPriority - aPriority
+      case 'created':
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      case 'deadline':
+        const aDeadline = 'deadline' in a ? new Date(a.deadline).getTime() : Infinity
+        const bDeadline = 'deadline' in b ? new Date(b.deadline).getTime() : Infinity
+        return aDeadline - bDeadline
+      case 'type':
+        return a.taskType.localeCompare(b.taskType)
+      default:
+        return 0
+    }
+  })
 
   const resetForm = () => {
     setFormData({
@@ -60,7 +93,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
 
     if (taskType === 'daily') {
       const newTask: RepeatedTask = {
-        id: editingTask?.id || Date.now().toString(),
+        id: editingTask?.id || crypto.randomUUID(),
         title: formData.title,
         description: formData.description,
         frequency: formData.frequency,
@@ -81,9 +114,9 @@ export function TodayView({ data, setData }: TodayViewProps) {
           repeatedTasks: [...data.repeatedTasks, newTask]
         })
       }
-    } else {
+    } else if (taskType === 'office') {
       const newTask: NonRepeatedTask = {
-        id: editingTask?.id || Date.now().toString(),
+        id: editingTask?.id || crypto.randomUUID(),
         title: formData.title,
         description: formData.description,
         deadline: formData.deadline || today,
@@ -104,12 +137,34 @@ export function TodayView({ data, setData }: TodayViewProps) {
           nonRepeatedTasks: [...data.nonRepeatedTasks, newTask]
         })
       }
+    } else if (taskType === 'regular') {
+      const newTask: RegularTask = {
+        id: editingTask?.id || crypto.randomUUID(),
+        title: formData.title,
+        description: formData.description,
+        priority: formData.priority,
+        status: editingTask ? (editingTask as RegularTask).status : 'pending',
+        createdAt: editingTask?.createdAt || new Date().toISOString(),
+        completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined
+      }
+
+      if (editingTask) {
+        setData({
+          ...data,
+          regularTasks: (data.regularTasks || []).map(t => t.id === editingTask.id ? newTask : t)
+        })
+      } else {
+        setData({
+          ...data,
+          regularTasks: [...(data.regularTasks || []), newTask]
+        })
+      }
     }
 
     resetForm()
   }
 
-  const handleToggleComplete = (task: RepeatedTask | NonRepeatedTask) => {
+  const handleToggleComplete = (task: RepeatedTask | NonRepeatedTask | RegularTask) => {
     if ('frequency' in task) {
       // Daily task
       const today = new Date().toISOString().split('T')[0]
@@ -122,7 +177,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
         ...data,
         repeatedTasks: data.repeatedTasks.map(t => t.id === task.id ? updatedTask : t)
       })
-    } else {
+    } else if ('deadline' in task) {
       // Office task
       const updatedTask = {
         ...task,
@@ -133,10 +188,21 @@ export function TodayView({ data, setData }: TodayViewProps) {
         ...data,
         nonRepeatedTasks: data.nonRepeatedTasks.map(t => t.id === task.id ? updatedTask : t)
       })
+    } else {
+      // Regular task
+      const updatedTask = {
+        ...task,
+        status: task.status === 'completed' ? 'pending' : 'completed',
+        completedAt: task.status === 'completed' ? undefined : new Date().toISOString()
+      } as RegularTask
+      setData({
+        ...data,
+        regularTasks: (data.regularTasks || []).map(t => t.id === task.id ? updatedTask : t)
+      })
     }
   }
 
-  const handleDelete = async (task: RepeatedTask | NonRepeatedTask) => {
+  const handleDelete = async (task: RepeatedTask | NonRepeatedTask | RegularTask) => {
     try {
       // Check if ID is a valid UUID before attempting Supabase deletion
       const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id)
@@ -144,12 +210,13 @@ export function TodayView({ data, setData }: TodayViewProps) {
       if (isValidUUID) {
         if ('frequency' in task) {
           // Delete from Supabase
-          const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
           await deleteRepeatedTaskFromSupabase(task.id)
-        } else {
+        } else if ('deadline' in task) {
           // Delete from Supabase
-          const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
           await deleteNonRepeatedTaskFromSupabase(task.id)
+        } else {
+          // Delete regular task from Supabase
+          await deleteRegularTaskFromSupabase(task.id)
         }
       } else {
         console.log('Skipping Supabase deletion for non-UUID task:', task.id)
@@ -161,10 +228,15 @@ export function TodayView({ data, setData }: TodayViewProps) {
           ...data,
           repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
         })
-      } else {
+      } else if ('deadline' in task) {
         setData({
           ...data,
           nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
+        })
+      } else {
+        setData({
+          ...data,
+          regularTasks: (data.regularTasks || []).filter(t => t.id !== task.id)
         })
       }
     } catch (error) {
@@ -175,10 +247,15 @@ export function TodayView({ data, setData }: TodayViewProps) {
           ...data,
           repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
         })
-      } else {
+      } else if ('deadline' in task) {
         setData({
           ...data,
           nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
+        })
+      } else {
+        setData({
+          ...data,
+          regularTasks: (data.regularTasks || []).filter(t => t.id !== task.id)
         })
       }
     }
@@ -213,12 +290,15 @@ export function TodayView({ data, setData }: TodayViewProps) {
     return task.status
   }
 
-  const isTaskCompleted = (task: RepeatedTask | NonRepeatedTask) => {
+  const isTaskCompleted = (task: RepeatedTask | NonRepeatedTask | RegularTask) => {
     if ('frequency' in task) {
       // Daily task - check if completed today
       return task.lastCompleted === today
-    } else {
+    } else if ('deadline' in task) {
       // Office task
+      return task.status === 'completed'
+    } else {
+      // Regular task
       return task.status === 'completed'
     }
   }
@@ -227,19 +307,78 @@ export function TodayView({ data, setData }: TodayViewProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Today</h2>
-          <p className="text-gray-600 dark:text-gray-400">{new Date().toLocaleDateString('en-US', {
+          <h2 className="text-2xl font-bold text-gray-900">Today</h2>
+          <p className="text-gray-600">{new Date().toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric'
           })}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Tasks due today or overdue • Use Daily Tasks and Office Tasks sections for full management
+          <p className="text-sm text-gray-500 mt-1">
+            All your tasks in one place • Create, manage, and complete tasks
           </p>
         </div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          {todaysTasks.length} {todaysTasks.length === 1 ? 'task' : 'tasks'}
+        <div className="text-sm text-gray-500">
+          {sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}
+        </div>
+      </div>
+
+      {/* Sorting and Filtering Controls */}
+      <div className="flex gap-6 items-center">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">Filter:</label>
+          <div className="flex gap-1">
+            <Button
+              variant={filterBy === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterBy('all')}
+              className="flex items-center gap-1"
+            >
+              All Tasks
+            </Button>
+            <Button
+              variant={filterBy === 'daily' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterBy('daily')}
+              className="flex items-center gap-1"
+            >
+              <Repeat className="h-3 w-3" />
+              Daily
+            </Button>
+            <Button
+              variant={filterBy === 'office' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterBy('office')}
+              className="flex items-center gap-1"
+            >
+              <Briefcase className="h-3 w-3" />
+              Office
+            </Button>
+            <Button
+              variant={filterBy === 'regular' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterBy('regular')}
+              className="flex items-center gap-1"
+            >
+              <Briefcase className="h-3 w-3" />
+              Regular
+            </Button>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">Sort by:</label>
+          <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="priority">Priority</SelectItem>
+              <SelectItem value="created">Created</SelectItem>
+              <SelectItem value="deadline">Deadline</SelectItem>
+              <SelectItem value="type">Type</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -247,17 +386,17 @@ export function TodayView({ data, setData }: TodayViewProps) {
         {/* Quick Add Task Input */}
         {!showForm && !editingTask && (
           <div
-            className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-text"
+            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 cursor-text"
             onClick={() => setShowForm(true)}
           >
-            <div className="w-5 h-5 border-2 border-gray-300 dark:border-gray-500 rounded-full"></div>
-            <span className="text-gray-500 dark:text-gray-400">Add a task</span>
+            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+            <span className="text-gray-500">Add a task</span>
           </div>
         )}
 
         {/* Expanded Form */}
         {(showForm || editingTask) && (
-          <Card className="border-green-200 dark:border-green-700 shadow-sm dark:bg-gray-800">
+          <Card className="border-green-200 shadow-sm bg-white">
             <CardContent className="p-4">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Task Type Selection */}
@@ -282,6 +421,16 @@ export function TodayView({ data, setData }: TodayViewProps) {
                     <Briefcase className="h-4 w-4" />
                     Office Task
                   </Button>
+                  <Button
+                    type="button"
+                    variant={taskType === 'regular' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTaskType('regular')}
+                    className="flex items-center gap-2"
+                  >
+                    <Briefcase className="h-4 w-4" />
+                    Regular Task
+                  </Button>
                 </div>
 
                 <div>
@@ -290,7 +439,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Task name"
-                    className="text-lg font-medium border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                    className="text-lg font-medium border border-gray-300 bg-white text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-200"
                     required
                     autoFocus
                   />
@@ -303,7 +452,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Description"
                     rows={2}
-                    className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-200 resize-none"
+                    className="border border-gray-300 bg-white text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-200 resize-none"
                   />
                 </div>
 
@@ -351,6 +500,23 @@ export function TodayView({ data, setData }: TodayViewProps) {
                       </Select>
                     </>
                   )}
+
+                  {taskType === 'regular' && (
+                    <Select
+                      value={formData.priority}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value as any }))}
+                    >
+                      <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-green-500">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
@@ -367,13 +533,13 @@ export function TodayView({ data, setData }: TodayViewProps) {
         )}
 
         {/* Today's Tasks */}
-        {todaysTasks.map((task) => (
-          <Card key={task.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        {sortedTasks.map((task) => (
+          <Card key={task.id} className="bg-white border-gray-200 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    {!('frequency' in task) && (
+                    {('deadline' in task || (!('frequency' in task) && !('deadline' in task))) && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -389,35 +555,35 @@ export function TodayView({ data, setData }: TodayViewProps) {
                         />
                       </Button>
                     )}
-                    <h3 className={`font-semibold dark:text-white ${
-                      isTaskCompleted(task) ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white'
+                    <h3 className={`font-semibold text-gray-900 ${
+                      isTaskCompleted(task) ? 'line-through text-gray-500' : 'text-gray-900'
                     }`}>
                       {task.title}
                     </h3>
                   </div>
 
                   {task.description && (
-                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 whitespace-pre-wrap">{task.description}</div>
+                    <div className="text-sm text-gray-600 mb-2 whitespace-pre-wrap">{task.description}</div>
                   )}
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {'frequency' in task ? (
                       <>
-                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 text-gray-700">
                           <Repeat className="h-3 w-3" />
                           {task.frequency}
                         </Badge>
-                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 text-gray-700">
                           <Clock className="h-3 w-3" />
                           Streak: {task.streak}
                         </Badge>
                         {task.lastCompleted && (
-                          <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
+                          <Badge className="bg-green-100 text-green-800">
                             Last: {new Date(task.lastCompleted).toLocaleDateString()}
                           </Badge>
                         )}
                       </>
-                    ) : (
+                    ) : 'deadline' in task ? (
                       <>
                         <Badge className={getPriorityColor((task as NonRepeatedTask).priority)}>
                           {(task as NonRepeatedTask).priority}
@@ -431,6 +597,19 @@ export function TodayView({ data, setData }: TodayViewProps) {
                             {new Date((task as NonRepeatedTask).deadline).toLocaleDateString()}
                           </Badge>
                         )}
+                      </>
+                    ) : (
+                      <>
+                        <Badge className={getPriorityColor((task as RegularTask).priority)}>
+                          {(task as RegularTask).priority}
+                        </Badge>
+                        <Badge className={getStatusColor((task as RegularTask).status)}>
+                          {(task as RegularTask).status}
+                        </Badge>
+                        <Badge variant="outline" className="flex items-center gap-1 border-gray-300 text-gray-700">
+                          <Briefcase className="h-3 w-3" />
+                          Regular
+                        </Badge>
                       </>
                     )}
                   </div>
@@ -446,13 +625,19 @@ export function TodayView({ data, setData }: TodayViewProps) {
                         title: task.title,
                         description: task.description,
                         frequency: 'frequency' in task ? task.frequency : 'daily',
-                        deadline: 'frequency' in task ? '' : task.deadline,
-                        priority: 'frequency' in task ? 'medium' : task.priority
+                        deadline: 'frequency' in task ? '' : ('deadline' in task ? task.deadline : ''),
+                        priority: 'frequency' in task ? 'medium' : ('priority' in task ? task.priority : 'medium')
                       })
-                      setTaskType('frequency' in task ? 'daily' : 'office')
+                      if ('frequency' in task) {
+                        setTaskType('daily')
+                      } else if ('deadline' in task) {
+                        setTaskType('office')
+                      } else {
+                        setTaskType('regular')
+                      }
                       setShowForm(true)
                     }}
-                    className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                    className="text-gray-600 hover:text-gray-800"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -460,7 +645,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(task)}
-                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                    className="text-red-600 hover:text-red-800"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -470,12 +655,12 @@ export function TodayView({ data, setData }: TodayViewProps) {
           </Card>
         ))}
 
-        {todaysTasks.length === 0 && (
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        {sortedTasks.length === 0 && (
+          <Card className="bg-white border-gray-200">
             <CardContent className="p-8 text-center">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-              <p className="text-gray-500 dark:text-gray-400 mb-2">No tasks for today</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">Add your first task to get started!</p>
+              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-500 mb-2">No tasks for today</p>
+              <p className="text-sm text-gray-400">Add your first task to get started!</p>
             </CardContent>
           </Card>
         )}

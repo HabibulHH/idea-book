@@ -5,19 +5,20 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import type { RepeatedTask, NonRepeatedTask } from '@/types'
+import type { RepeatedTask, NonRepeatedTask, RegularTask } from '@/types'
 import { Trash2, Edit, CheckCircle, Calendar, Clock, Repeat } from 'lucide-react'
 import { useLoading } from '@/hooks/useLoading'
+import { deleteRepeatedTaskFromSupabase, deleteNonRepeatedTaskFromSupabase, deleteRegularTaskFromSupabase } from '@/lib/storage'
 
 interface TaskManagerProps {
-  type: 'repeated' | 'oneTime'
+  type: 'repeated' | 'oneTime' | 'regular'
   tasks: any[]
   onUpdateTasks: (tasks: any[]) => void
 }
 
 export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
   const [showForm, setShowForm] = useState(false)
-  const [editingTask, setEditingTask] = useState<RepeatedTask | NonRepeatedTask | null>(null)
+  const [editingTask, setEditingTask] = useState<RepeatedTask | NonRepeatedTask | RegularTask | null>(null)
   const { isLoadingKey, withLoading } = useLoading()
 
   const [formData, setFormData] = useState({
@@ -65,7 +66,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
             onUpdateTasks([...(tasks as RepeatedTask[]), newTask])
           }
         }
-      } else {
+      } else if (type === 'oneTime') {
         const newTask: NonRepeatedTask = {
           id: editingTask?.id || crypto.randomUUID(),
           title: formData.title,
@@ -86,20 +87,42 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
             onUpdateTasks([...(tasks as NonRepeatedTask[]), newTask])
           }
         }
+      } else if (type === 'regular') {
+        const newTask: RegularTask = {
+          id: editingTask?.id || crypto.randomUUID(),
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          status: editingTask ? (editingTask as RegularTask).status : 'pending',
+          createdAt: editingTask?.createdAt || new Date().toISOString(),
+          completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined
+        }
+
+        if (editingTask) {
+          onUpdateTasks((tasks as RegularTask[]).map(t => t.id === editingTask.id ? newTask : t))
+        } else {
+          // Check if task already exists to prevent duplicates
+          const existingTask = (tasks as RegularTask[]).find(t => t.id === newTask.id)
+          if (!existingTask) {
+            onUpdateTasks([...(tasks as RegularTask[]), newTask])
+          }
+        }
       }
 
       resetForm()
     }, 'submit-task')
   }
 
-  const handleEdit = (task: RepeatedTask | NonRepeatedTask) => {
+  const handleEdit = (task: RepeatedTask | NonRepeatedTask | RegularTask) => {
     setEditingTask(task)
     setFormData({
       title: task.title,
       description: task.description,
       frequency: type === 'repeated' ? (task as RepeatedTask).frequency : 'daily',
       deadline: type === 'oneTime' ? (task as NonRepeatedTask).deadline : '',
-      priority: type === 'oneTime' ? (task as NonRepeatedTask).priority : 'medium'
+      priority: type === 'oneTime' || type === 'regular' ? 
+        (type === 'oneTime' ? (task as NonRepeatedTask).priority : (task as RegularTask).priority) : 
+        'medium'
     })
     setShowForm(true)
   }
@@ -112,11 +135,11 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
         
         if (isValidUUID) {
           if (type === 'repeated') {
-            const { deleteRepeatedTaskFromSupabase } = await import('@/lib/storage')
             await deleteRepeatedTaskFromSupabase(id)
-          } else {
-            const { deleteNonRepeatedTaskFromSupabase } = await import('@/lib/storage')
+          } else if (type === 'oneTime') {
             await deleteNonRepeatedTaskFromSupabase(id)
+          } else if (type === 'regular') {
+            await deleteRegularTaskFromSupabase(id)
           }
         } else {
           console.log('Skipping Supabase deletion for non-UUID task:', id)
@@ -132,7 +155,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
     }, `delete-${id}`)
   }
 
-  const handleToggleComplete = async (task: RepeatedTask | NonRepeatedTask) => {
+  const handleToggleComplete = async (task: RepeatedTask | NonRepeatedTask | RegularTask) => {
     await withLoading(async () => {
       if (type === 'repeated') {
         const repeatedTask = task as RepeatedTask
@@ -143,7 +166,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
           streak: repeatedTask.lastCompleted === today ? repeatedTask.streak : repeatedTask.streak + 1
         }
         onUpdateTasks((tasks as RepeatedTask[]).map(t => t.id === task.id ? updatedTask : t))
-      } else {
+      } else if (type === 'oneTime') {
         const oneTimeTask = task as NonRepeatedTask
         const updatedTask = {
           ...oneTimeTask,
@@ -151,6 +174,14 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
           completedAt: oneTimeTask.status === 'completed' ? undefined : new Date().toISOString()
         }
         onUpdateTasks((tasks as NonRepeatedTask[]).map(t => t.id === task.id ? updatedTask : t))
+      } else if (type === 'regular') {
+        const regularTask = task as RegularTask
+        const updatedTask = {
+          ...regularTask,
+          status: regularTask.status === 'completed' ? 'pending' : 'completed',
+          completedAt: regularTask.status === 'completed' ? undefined : new Date().toISOString()
+        }
+        onUpdateTasks((tasks as RegularTask[]).map(t => t.id === task.id ? updatedTask : t))
       }
     }, `toggle-${task.id}`)
   }
@@ -188,7 +219,8 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">
-          {type === 'repeated' ? 'Daily Recurring Tasks' : 'One-Time Tasks'}
+          {type === 'repeated' ? 'Daily Recurring Tasks' : 
+           type === 'oneTime' ? 'Office Tasks' : 'Regular Tasks'}
         </h2>
         <div className="flex items-center gap-4">
           <Button
@@ -301,6 +333,23 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                       </Select>
                     </>
                   )}
+
+                  {type === 'regular' && (
+                    <Select
+                      value={formData.priority}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value as any }))}
+                    >
+                      <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-green-500">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
@@ -333,7 +382,7 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    {type === 'oneTime' && (
+                    {(type === 'oneTime' || type === 'regular') && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -344,7 +393,9 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                         {!isLoadingKey(`toggle-${task.id}`) && (
                           <CheckCircle
                             className={`h-4 w-4 ${
-                              (task as NonRepeatedTask).status === 'completed'
+                              type === 'oneTime' ? 
+                                (task as NonRepeatedTask).status === 'completed' :
+                                (task as RegularTask).status === 'completed'
                                 ? 'text-green-600 fill-green-600'
                                 : 'text-gray-400'
                             }`}
@@ -353,7 +404,8 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                       </Button>
                     )}
                     <h3 className={`font-semibold dark:text-white ${
-                      type === 'oneTime' && (task as NonRepeatedTask).status === 'completed'
+                      (type === 'oneTime' && (task as NonRepeatedTask).status === 'completed') ||
+                      (type === 'regular' && (task as RegularTask).status === 'completed')
                         ? 'line-through text-gray-500 dark:text-gray-400'
                         : 'text-gray-900 dark:text-white'
                     }`}>
@@ -400,6 +452,17 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                         )}
                       </>
                     )}
+
+                    {type === 'regular' && (
+                      <>
+                        <Badge className={getPriorityColor((task as RegularTask).priority)}>
+                          {(task as RegularTask).priority}
+                        </Badge>
+                        <Badge className={getStatusColor((task as RegularTask).status)}>
+                          {(task as RegularTask).status}
+                        </Badge>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -433,7 +496,8 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-8 text-center">
               <p className="text-gray-500 dark:text-gray-400">
-                No {type === 'repeated' ? 'daily recurring' : 'one-time'} tasks yet. Create your first one!
+                No {type === 'repeated' ? 'daily recurring' : 
+                    type === 'oneTime' ? 'office' : 'regular'} tasks yet. Create your first one!
               </p>
             </CardContent>
           </Card>

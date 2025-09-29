@@ -47,6 +47,16 @@ export interface NonRepeatedTask {
   completedAt?: string;
 }
 
+export interface RegularTask {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'pending' | 'in-progress' | 'completed';
+  createdAt: string;
+  completedAt?: string;
+}
+
 export interface NewsfeedPost {
   id: string;
   user_id: string;
@@ -137,6 +147,7 @@ export interface AppData {
   executionPipelines: ExecutionPipeline[];
   repeatedTasks: RepeatedTask[];
   nonRepeatedTasks: NonRepeatedTask[];
+  regularTasks: RegularTask[];
   newsfeedPosts: NewsfeedPost[];
   books: Book[]; // Add books to your app data
   people: Person[]; // Add people to your app data

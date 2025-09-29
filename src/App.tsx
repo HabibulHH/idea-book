@@ -13,23 +13,30 @@ import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData, saveData } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
-import { Lightbulb, ArrowRight, Calendar, Briefcase, Download, Upload, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users } from 'lucide-react'
+import { Lightbulb, ArrowRight, Calendar, Briefcase, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, ChevronRight, Repeat, PanelLeftClose, PanelLeftOpen, SidebarClose, AlignJustify } from 'lucide-react'
 import { useLoading } from '@/hooks/useLoading'
 
 function App() {
-  const [appData, setAppData] = useState<AppData>(data as AppData)
+  const [appData, setAppData] = useState<AppData>({
+    ...data as AppData,
+    regularTasks: (data as AppData).regularTasks || []
+  })
   const [activeSection, setActiveSection] = useState('today')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false)
+  const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [showConfigModal, setShowConfigModal] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
   const { isLoadingKey, withLoading } = useLoading()
 
   // Check Supabase auth state
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id)
         if (session?.user) {
           setIsAuthenticated(true)
           setUser(session.user)
@@ -41,10 +48,19 @@ function App() {
     )
 
     // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.log('Session error:', error)
+        setIsAuthenticated(false)
+        setUser(null)
+      } else if (session?.user) {
+        console.log('User authenticated:', session.user.id)
         setIsAuthenticated(true)
         setUser(session.user)
+      } else {
+        console.log('No active session')
+        setIsAuthenticated(false)
+        setUser(null)
       }
     })
 
@@ -92,6 +108,10 @@ function App() {
     setIsMobileSidebarOpen(!isMobileSidebarOpen)
   }
 
+  const toggleLeftSidebar = () => {
+    setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)
+  }
+
   const handleNavigation = (sectionId: string) => {
     setActiveSection(sectionId)
     setIsMobileSidebarOpen(false) // Close mobile sidebar when navigating
@@ -114,6 +134,7 @@ function App() {
   useEffect(() => {
     const loadAppData = async () => {
       try {
+        setIsInitialLoading(true)
         const loadedData = await loadData()
         
         // Deduplicate tasks to prevent duplicates
@@ -123,6 +144,9 @@ function App() {
             index === self.findIndex(t => t.id === task.id)
           ),
           repeatedTasks: loadedData.repeatedTasks.filter((task, index, self) => 
+            index === self.findIndex(t => t.id === task.id)
+          ),
+          regularTasks: (loadedData.regularTasks || []).filter((task, index, self) => 
             index === self.findIndex(t => t.id === task.id)
           )
         }
@@ -181,23 +205,13 @@ function App() {
         console.error('Error loading data:', error)
         // Fall back to default data if loading fails
         setAppData(data as AppData)
+      } finally {
+        setIsInitialLoading(false)
       }
     }
     loadAppData()
   }, [])
 
-  const exportData = async () => {
-    await withLoading(async () => {
-      const dataStr = JSON.stringify(appData, null, 2)
-      const blob = new Blob([dataStr], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'self-management-data.json'
-      a.click()
-      URL.revokeObjectURL(url)
-    }, 'save-data')
-  }
 
   // Auto-save data when it changes
   useEffect(() => {
@@ -215,34 +229,10 @@ function App() {
     }
   }, [appData])
 
-  const importData = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      await withLoading(async () => {
-        return new Promise<void>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = async (e) => {
-            try {
-              const newData = JSON.parse(e.target?.result as string)
-              // Save imported data to Supabase
-              await saveData(newData)
-              setAppData(newData)
-              resolve()
-            } catch (error) {
-              console.error('Error loading data:', error)
-              reject(error)
-            }
-          }
-          reader.onerror = () => reject(new Error('Failed to read file'))
-          reader.readAsText(file)
-        })
-      }, 'load-data')
-    }
-  }
 
   useEffect(() => {
     setAppData(prev => ({ ...prev, lastUpdated: new Date().toISOString() }))
-  }, [appData.ideas, appData.executionPipelines, appData.repeatedTasks, appData.nonRepeatedTasks])
+  }, [appData.ideas, appData.executionPipelines, appData.repeatedTasks, appData.nonRepeatedTasks, appData.regularTasks])
 
   const navigationItems = [
     { id: 'today', label: 'Today', icon: Sun },
@@ -251,8 +241,6 @@ function App() {
     { id: 'people', label: 'People', icon: Users },
     { id: 'ideas', label: 'Ideas', icon: Lightbulb },
     { id: 'pipeline', label: 'Pipeline', icon: ArrowRight },
-    { id: 'daily', label: 'Daily Tasks', icon: Calendar },
-    { id: 'office', label: 'Office Tasks', icon: Briefcase },
   ]
 
   const renderContent = () => {
@@ -269,25 +257,21 @@ function App() {
         return <IdeaParkingLot data={appData} setData={setAppData} />
       case 'pipeline':
         return <ExecutionPipeline data={appData} setData={setAppData} />
-      case 'daily':
-        return (
-          <TaskManager
-            type="repeated"
-            tasks={appData.repeatedTasks}
-            onUpdateTasks={(tasks) => setAppData(prev => ({ ...prev, repeatedTasks: tasks }))}
-          />
-        )
-      case 'office':
-        return (
-          <TaskManager
-            type="oneTime"
-            tasks={appData.nonRepeatedTasks}
-            onUpdateTasks={(tasks) => setAppData(prev => ({ ...prev, nonRepeatedTasks: tasks }))}
-          />
-        )
       default:
         return <TodayView data={appData} setData={setAppData} />
     }
+  }
+
+  // Show loading screen while initializing
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading your tasks...</p>
+        </div>
+      </div>
+    )
   }
 
   // Show login screen if not authenticated
@@ -296,19 +280,19 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex">
+    <div className="min-h-screen bg-white flex">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <Button
             onClick={toggleMobileSidebar}
             variant="ghost"
             size="sm"
-            className="p-2 text-gray-600 dark:text-gray-300"
+            className="p-2 text-gray-600"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white">Self Manager</h1>
+          <h1 className="text-lg font-bold text-gray-900">Self Manager</h1>
           <div className="w-9"></div> {/* Spacer for centering */}
         </div>
       </div>
@@ -321,21 +305,62 @@ function App() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Left Sidebar */}
       <div className={`
-        w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-screen
+        bg-gray-50 border-r border-gray-200 shadow-sm flex flex-col h-screen
         lg:relative lg:translate-x-0 lg:z-auto
-        fixed top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 z-50 transform transition-all duration-300 ease-in-out
         ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${isLeftSidebarCollapsed ? 'lg:w-24' : 'lg:w-64'}
       `}>
         <div className="p-6 flex-1">
+          {/* Branding Section */}
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-              Self Manager
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Organize your workflow
-            </p>
+            {isLeftSidebarCollapsed ? (
+              <div className="flex flex-col items-center gap-3">
+                <img 
+                  src="/favicon.ico" 
+                  alt="Self Manager" 
+                  className="w-8 h-8"
+                />
+                {/* Expand Button - Show when collapsed */}
+                <Button
+                  onClick={toggleLeftSidebar}
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                >
+                  <AlignJustify className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src="/favicon.ico" 
+                    alt="Self Manager" 
+                    className="w-8 h-8"
+                  />
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900 mb-1">
+                      Self Manager
+                    </h1>
+                    <p className="text-sm text-gray-600">
+                      Organize yourself
+                    </p>
+                  </div>
+                </div>
+                {/* Collapse Button - Show when expanded */}
+                <Button
+                  onClick={toggleLeftSidebar}
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-0 right-0 p-2 h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                >
+                  <AlignJustify className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -348,124 +373,216 @@ function App() {
                   onClick={() => handleNavigation(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-200 ease-in-out hover-lift ${
                     activeSection === item.id
-                      ? 'bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 shadow-sm'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      ? 'bg-green-50 text-green-700 border border-green-200 shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  } ${
+                    isLeftSidebarCollapsed ? 'justify-center px-2 py-3' : ''
                   }`}
+                  title={isLeftSidebarCollapsed ? item.label : undefined}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <Icon className={`h-5 w-5 ${isLeftSidebarCollapsed ? 'mx-auto' : ''}`} />
+                  {!isLeftSidebarCollapsed && (
+                    <span className="font-medium">{item.label}</span>
+                  )}
                 </button>
               )
             })}
           </nav>
-
-          {/* Data Management */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Data</h3>
-            <div className="space-y-2">
-              <Button
-                onClick={exportData}
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                loading={isLoadingKey('save-data')}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export Data
-              </Button>
-              <label className="block relative">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                  asChild
-                  loading={isLoadingKey('load-data')}
-                >
-                  <span>
-                    {isLoadingKey('load-data') ? (
-                      <>
-                        <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Import Data
-                      </>
-                    )}
-                  </span>
-                </Button>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={importData}
-                  className="hidden"
-                  disabled={isLoadingKey('load-data')}
-                />
-              </label>
-            </div>
-          </div>
         </div>
 
         {/* Profile Section - Bottom Left */}
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-green-600 dark:text-green-400" />
+        <div className="p-6 border-t border-gray-200 bg-white">
+          {isLeftSidebarCollapsed ? (
+            <div className="flex justify-center">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-green-600" />
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.email || 'User'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-            </div>
-          </div>
-          
-          {/* Theme Toggle */}
-          <Button
-            onClick={toggleTheme}
-            variant="outline"
-            size="sm"
-            className="w-full mb-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-600"
-          >
-            {isDarkMode ? (
-              <>
-                <Sun className="h-4 w-4 mr-2" />
-                Light Mode
-              </>
-            ) : (
-              <>
-                <Moon className="h-4 w-4 mr-2" />
-                Dark Mode
-              </>
-            )}
-          </Button>
-          
-          {/* Configuration */}
-          <Button
-            onClick={() => setShowConfigModal(true)}
-            variant="outline"
-            size="sm"
-            className="w-full mb-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-600"
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Configuration
-          </Button>
-          
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className="w-full text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-600"
-          >
-            Logout
-          </Button>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user?.email?.split('@')[0] || 'User'}
+                  </p>
+                  <p className="text-xs text-gray-500">Logged in</p>
+                </div>
+              </div>
+              
+              {/* Theme Toggle */}
+              <Button
+                onClick={toggleTheme}
+                variant="outline"
+                size="sm"
+                className="w-full mb-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+              >
+                {isDarkMode ? (
+                  <>
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4 mr-2" />
+                    Dark Mode
+                  </>
+                )}
+              </Button>
+              
+              {/* Configuration */}
+              <Button
+                onClick={() => setShowConfigModal(true)}
+                variant="outline"
+                size="sm"
+                className="w-full mb-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Configuration
+              </Button>
+              
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                size="sm"
+                className="w-full text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+              >
+                Logout
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto lg:ml-0 ml-0">
+      <div className={`flex-1 overflow-auto transition-all duration-300 ease-in-out ${
+        isLeftSidebarCollapsed ? 'lg:ml-24' : 'lg:ml-0'
+      } ${!isRightSidebarCollapsed ? 'lg:mr-80' : ''}`}>
         <div className="p-4 lg:p-8 pt-16 lg:pt-8">
           <div className="transition-all duration-300 ease-in-out">
             {renderContent()}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Sidebar Toggle Button */}
+      <Button
+        onClick={() => setIsRightSidebarCollapsed(!isRightSidebarCollapsed)}
+        variant="outline"
+        size="sm"
+        className="fixed top-4 right-4 z-40 lg:block hidden"
+      >
+        {isRightSidebarCollapsed ? (
+          <>
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Show Panel
+          </>
+        ) : (
+          <>
+            <ChevronRight className="h-4 w-4 mr-1" />
+            Hide Panel
+          </>
+        )}
+      </Button>
+
+      {/* Right Sidebar */}
+      <div className={`
+        w-80 bg-gray-50 border-l border-gray-200 shadow-sm flex flex-col h-screen
+        fixed top-0 right-0 z-30 transform transition-transform duration-300 ease-in-out
+        ${isRightSidebarCollapsed ? 'translate-x-full' : 'translate-x-0'}
+        lg:block hidden
+      `}>
+        <div className="p-6 flex-1">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">
+              Task Overview
+            </h2>
+            <p className="text-sm text-gray-600">
+              Your productivity insights
+            </p>
+          </div>
+
+          {/* Task Statistics */}
+          <div className="space-y-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Daily Tasks</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {data.repeatedTasks.filter(task => task.isActive).length}
+                  </p>
+                </div>
+                <Repeat className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+
+            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-orange-900">Office Tasks</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {data.nonRepeatedTasks.filter(task => task.status !== 'completed').length}
+                  </p>
+                </div>
+                <Briefcase className="h-8 w-8 text-orange-600" />
+              </div>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-900">Regular Tasks</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {(data.regularTasks || []).filter(task => task.status !== 'completed').length}
+                  </p>
+                </div>
+                <Briefcase className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Actions</h3>
+            <Button
+              onClick={() => setActiveSection('today')}
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              View Today
+            </Button>
+            <Button
+              onClick={() => setActiveSection('ideas')}
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+            >
+              <Lightbulb className="h-4 w-4 mr-2" />
+              Idea Parking
+            </Button>
+            <Button
+              onClick={() => setActiveSection('people')}
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              People
+            </Button>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Activity</h3>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>• Completed 3 tasks today</p>
+              <p>• Added 2 new ideas</p>
+              <p>• Updated 1 contact</p>
+            </div>
           </div>
         </div>
       </div>

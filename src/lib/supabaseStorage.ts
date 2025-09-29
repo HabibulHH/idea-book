@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask } from '@/types'
+import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask, RegularTask } from '@/types'
 
 // Helper function to get current user ID (you'll need to implement authentication)
 const getCurrentUserId = async () => {
@@ -45,6 +45,10 @@ const migrateDataToUUIDs = (data: AppData): AppData => {
       id: generateNewId(task.id)
     })),
     nonRepeatedTasks: data.nonRepeatedTasks.map(task => ({
+      ...task,
+      id: generateNewId(task.id)
+    })),
+    regularTasks: (data.regularTasks || []).map(task => ({
       ...task,
       id: generateNewId(task.id)
     }))
@@ -116,6 +120,15 @@ const convertDbToAppTypes = (dbData: any): AppData => {
       createdAt: task.created_at,
       completedAt: task.completed_at
     })),
+    regularTasks: (dbData.regular_tasks || []).map((task: any) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      status: task.status,
+      createdAt: task.created_at,
+      completedAt: task.completed_at
+    })),
     newsfeedPosts: dbData.newsfeed_posts || [],
     books: dbData.books || [],
     people: dbData.people || [],
@@ -128,11 +141,12 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
   try {
     const userId = await getCurrentUserId()
 
-    const [ideasResult, pipelinesResult, repeatedTasksResult, nonRepeatedTasksResult] = await Promise.all([
+    const [ideasResult, pipelinesResult, repeatedTasksResult, nonRepeatedTasksResult, regularTasksResult] = await Promise.all([
       supabase.from('ideas').select('*').eq('user_id', userId),
       supabase.from('execution_pipelines').select('*').eq('user_id', userId),
       supabase.from('repeated_tasks').select('*').eq('user_id', userId),
-      supabase.from('non_repeated_tasks').select('*').eq('user_id', userId)
+      supabase.from('non_repeated_tasks').select('*').eq('user_id', userId),
+      supabase.from('regular_tasks').select('*').eq('user_id', userId)
     ])
 
     // Check for network errors and handle gracefully
@@ -420,7 +434,8 @@ export const saveAllDataToSupabase = async (appData: AppData): Promise<void> => 
     const needsMigration = appData.ideas.some(idea => !isValidUUID(idea.id)) ||
                           appData.executionPipelines.some(pipeline => !isValidUUID(pipeline.id) || !isValidUUID(pipeline.ideaId)) ||
                           appData.repeatedTasks.some(task => !isValidUUID(task.id)) ||
-                          appData.nonRepeatedTasks.some(task => !isValidUUID(task.id));
+                          appData.nonRepeatedTasks.some(task => !isValidUUID(task.id)) ||
+                          (appData.regularTasks || []).some(task => !isValidUUID(task.id));
 
     let dataToSave = appData;
     if (needsMigration) {
@@ -487,6 +502,20 @@ export const saveAllDataToSupabase = async (appData: AppData): Promise<void> => 
         completed_at: task.completedAt
       }))
       upsertPromises.push(supabase.from('non_repeated_tasks').upsert(dbNonRepeatedTasks))
+    }
+
+    if ((dataToSave.regularTasks || []).length > 0) {
+      const dbRegularTasks = dataToSave.regularTasks.map(task => ({
+        id: task.id,
+        user_id: userId,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        created_at: task.createdAt,
+        completed_at: task.completedAt
+      }))
+      upsertPromises.push(supabase.from('regular_tasks').upsert(dbRegularTasks))
     }
 
     const results = await Promise.allSettled(upsertPromises)

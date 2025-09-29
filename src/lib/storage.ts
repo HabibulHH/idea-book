@@ -1,4 +1,4 @@
-import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask } from '@/types';
+import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask, RegularTask } from '@/types';
 import {
   loadDataFromSupabase,
   saveIdea as saveIdeaToSupabase,
@@ -27,6 +27,7 @@ export const loadData = async (): Promise<AppData> => {
       executionPipelines: [],
       repeatedTasks: [],
       nonRepeatedTasks: [],
+      regularTasks: [],
       newsfeedPosts: [],
       books: [],
       people: [],
@@ -231,6 +232,27 @@ export const deleteNonRepeatedTaskFromSupabase = async (taskId: string): Promise
     await deleteNonRepeatedTaskFromSupabaseToSupabase(taskId);
   } catch (error) {
     console.error('Error deleting non-repeated task from Supabase:', error);
+    throw error;
+  }
+};
+
+export const deleteRegularTaskFromSupabase = async (taskId: string): Promise<void> => {
+  try {
+    const { supabase } = await import('./supabase');
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id || 'anonymous';
+    
+    const { error } = await supabase
+      .from('regular_tasks')
+      .delete()
+      .eq('id', taskId)
+      .eq('user_id', userId);
+    
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error deleting regular task from Supabase:', error);
     throw error;
   }
 };
