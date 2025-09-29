@@ -1,4 +1,4 @@
-import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask, RegularTask } from '@/types';
+import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask } from '@/types';
 import {
   loadDataFromSupabase,
   saveIdea as saveIdeaToSupabase,

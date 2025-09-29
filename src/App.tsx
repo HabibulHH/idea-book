@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import IdeaParkingLot from '@/components/IdeaParkingLot'
 import ExecutionPipeline from '@/components/ExecutionPipeline'
-import { TaskManager } from '@/components/TaskManager'
 import { TodayView } from '@/components/TodayView'
 import { NewsFeed } from '@/components/NewsFeed'
 import { Books } from '@/components/Books'
@@ -13,8 +12,7 @@ import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData, saveData } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
-import { Lightbulb, ArrowRight, Calendar, Briefcase, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, ChevronRight, Repeat, PanelLeftClose, PanelLeftOpen, SidebarClose, AlignJustify } from 'lucide-react'
-import { useLoading } from '@/hooks/useLoading'
+import { Lightbulb, ArrowRight, Calendar, Briefcase, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, Repeat, AlignJustify } from 'lucide-react'
 
 function App() {
   const [appData, setAppData] = useState<AppData>({
@@ -30,7 +28,6 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-  const { isLoadingKey, withLoading } = useLoading()
 
   // Check Supabase auth state
   useEffect(() => {
@@ -457,35 +454,27 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 overflow-auto transition-all duration-300 ease-in-out ${
+      <div className={`flex-1 h-screen overflow-hidden transition-all duration-300 ease-in-out ${
         isLeftSidebarCollapsed ? 'lg:ml-24' : 'lg:ml-0'
       } ${!isRightSidebarCollapsed ? 'lg:mr-80' : ''}`}>
-        <div className="p-4 lg:p-8 pt-16 lg:pt-8">
-          <div className="transition-all duration-300 ease-in-out">
+        <div className="h-full p-4 lg:p-8 pt-16 lg:pt-8">
+          <div className="h-full transition-all duration-300 ease-in-out">
             {renderContent()}
           </div>
         </div>
       </div>
 
       {/* Right Sidebar Toggle Button */}
-      <Button
+      <button
         onClick={() => setIsRightSidebarCollapsed(!isRightSidebarCollapsed)}
-        variant="outline"
-        size="sm"
-        className="fixed top-4 right-4 z-40 lg:block hidden"
+        className="fixed top-4 right-4 z-40 lg:block hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
       >
         {isRightSidebarCollapsed ? (
-          <>
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Show Panel
-          </>
+          <ChevronLeft className="h-4 w-4" />
         ) : (
-          <>
-            <ChevronRight className="h-4 w-4 mr-1" />
-            Hide Panel
-          </>
+          <Menu className="h-4 w-4" />
         )}
-      </Button>
+      </button>
 
       {/* Right Sidebar */}
       <div className={`
@@ -511,7 +500,7 @@ function App() {
                 <div>
                   <p className="text-sm font-medium text-blue-900">Daily Tasks</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    {data.repeatedTasks.filter(task => task.isActive).length}
+                    {appData.repeatedTasks.filter(task => task.isActive).length}
                   </p>
                 </div>
                 <Repeat className="h-8 w-8 text-blue-600" />
@@ -523,7 +512,7 @@ function App() {
                 <div>
                   <p className="text-sm font-medium text-orange-900">Office Tasks</p>
                   <p className="text-2xl font-bold text-orange-600">
-                    {data.nonRepeatedTasks.filter(task => task.status !== 'completed').length}
+                    {appData.nonRepeatedTasks.filter(task => task.status !== 'completed').length}
                   </p>
                 </div>
                 <Briefcase className="h-8 w-8 text-orange-600" />
@@ -535,7 +524,7 @@ function App() {
                 <div>
                   <p className="text-sm font-medium text-green-900">Regular Tasks</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {(data.regularTasks || []).filter(task => task.status !== 'completed').length}
+                    {(appData.regularTasks || []).filter(task => task.status !== 'completed').length}
                   </p>
                 </div>
                 <Briefcase className="h-8 w-8 text-green-600" />

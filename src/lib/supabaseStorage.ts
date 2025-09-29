@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask, RegularTask } from '@/types'
+import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask } from '@/types'
 
 // Helper function to get current user ID (you'll need to implement authentication)
 const getCurrentUserId = async () => {
@@ -177,7 +177,8 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
       ideas: ideasResult.data || [],
       execution_pipelines: pipelinesResult.data || [],
       repeated_tasks: repeatedTasksResult.data || [],
-      non_repeated_tasks: nonRepeatedTasksResult.data || []
+      non_repeated_tasks: nonRepeatedTasksResult.data || [],
+      regular_tasks: regularTasksResult.data || []
     })
   } catch (error) {
     console.error('Error loading data from Supabase:', error)
@@ -187,6 +188,7 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
       executionPipelines: [],
       repeatedTasks: [],
       nonRepeatedTasks: [],
+      regularTasks: [],
       newsfeedPosts: [],
       books: [],
       people: [],
