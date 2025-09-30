@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { AppData } from '@/types';
-import { addIdea, deleteIdea, addExecutionPipeline, saveData } from '@/lib/storage';
+import { addIdea, deleteIdea, addExecutionPipeline, saveIdea, saveExecutionPipeline } from '@/lib/storage';
 import { Plus, Trash2, Play, Tag, Calendar } from 'lucide-react';
 
 interface IdeaParkingLotProps {
@@ -37,7 +37,13 @@ export default function IdeaParkingLot({ data, setData }: IdeaParkingLotProps) {
     });
 
     setData(updatedData);
-    await saveData(updatedData);
+    
+    // Save the new idea to database
+    const savedIdea = updatedData.ideas.find(i => i.id === updatedData.ideas[updatedData.ideas.length - 1].id);
+    if (savedIdea) {
+      await saveIdea(savedIdea);
+    }
+    
     setNewIdea({ title: '', description: '', priority: 'medium', tags: '' });
     setShowAddForm(false);
   };
@@ -45,13 +51,23 @@ export default function IdeaParkingLot({ data, setData }: IdeaParkingLotProps) {
   const handleMoveToPipeline = async (ideaId: string) => {
     const updatedData = addExecutionPipeline(data, ideaId);
     setData(updatedData);
-    await saveData(updatedData);
+    
+    // Save the idea and pipeline to database
+    const idea = updatedData.ideas.find(i => i.id === ideaId);
+    const pipeline = updatedData.executionPipelines.find(p => p.ideaId === ideaId);
+    
+    if (idea) {
+      await saveIdea(idea);
+    }
+    if (pipeline) {
+      await saveExecutionPipeline(pipeline);
+    }
   };
 
   const handleDeleteIdea = async (ideaId: string) => {
     const updatedData = await deleteIdea(data, ideaId);
     setData(updatedData);
-    await saveData(updatedData);
+    // deleteIdea already handles database deletion
   };
 
   const parkingIdeas = data.ideas.filter(idea => idea.status === 'parking');

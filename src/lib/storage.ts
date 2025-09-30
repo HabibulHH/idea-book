@@ -1,4 +1,4 @@
-import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask } from '@/types';
+import type { AppData, Idea, ExecutionPipeline, RepeatedTask, NonRepeatedTask, RegularTask } from '@/types';
 import {
   loadDataFromSupabase,
   saveIdea as saveIdeaToSupabase,
@@ -31,7 +31,6 @@ export const loadData = async (): Promise<AppData> => {
       newsfeedPosts: [],
       books: [],
       people: [],
-      lastUpdated: new Date().toISOString(),
     };
   }
 };
@@ -232,6 +231,40 @@ export const deleteNonRepeatedTaskFromSupabase = async (taskId: string): Promise
     await deleteNonRepeatedTaskFromSupabaseToSupabase(taskId);
   } catch (error) {
     console.error('Error deleting non-repeated task from Supabase:', error);
+    throw error;
+  }
+};
+
+export const saveRegularTask = async (task: RegularTask): Promise<RegularTask> => {
+  try {
+    const { supabase } = await import('./supabase');
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id || 'anonymous';
+    
+    const dbTask = {
+      id: task.id,
+      user_id: userId,
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      status: task.status,
+      created_at: task.createdAt,
+      completed_at: task.completedAt
+    };
+
+    const { error } = await supabase
+      .from('regular_tasks')
+      .upsert(dbTask)
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    return task;
+  } catch (error) {
+    console.error('Error saving regular task to Supabase:', error);
     throw error;
   }
 };

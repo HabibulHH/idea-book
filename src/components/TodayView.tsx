@@ -4,6 +4,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { RepeatedTask, NonRepeatedTask, RegularTask, AppData } from '@/types'
 import { Repeat, Briefcase } from 'lucide-react'
 import { TaskList } from './TaskList'
+import { saveRepeatedTask, saveNonRepeatedTask, saveRegularTask } from '@/lib/storage'
+import { WeatherHeader } from './WeatherHeader'
 
 interface TodayViewProps {
   data: AppData
@@ -84,7 +86,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
     setTaskType('daily')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (taskType === 'daily') {
@@ -104,11 +106,15 @@ export function TodayView({ data, setData }: TodayViewProps) {
           ...data,
           repeatedTasks: data.repeatedTasks.map(t => t.id === editingTask.id ? newTask : t)
         })
+        // Save the updated task to database
+        await saveRepeatedTask(newTask)
       } else {
         setData({
           ...data,
           repeatedTasks: [...data.repeatedTasks, newTask]
         })
+        // Save the new task to database
+        await saveRepeatedTask(newTask)
       }
     } else if (taskType === 'office') {
       const newTask: NonRepeatedTask = {
@@ -127,11 +133,15 @@ export function TodayView({ data, setData }: TodayViewProps) {
           ...data,
           nonRepeatedTasks: data.nonRepeatedTasks.map(t => t.id === editingTask.id ? newTask : t)
         })
+        // Save the updated task to database
+        await saveNonRepeatedTask(newTask)
       } else {
         setData({
           ...data,
           nonRepeatedTasks: [...data.nonRepeatedTasks, newTask]
         })
+        // Save the new task to database
+        await saveNonRepeatedTask(newTask)
       }
     } else if (taskType === 'regular') {
       const newTask: RegularTask = {
@@ -149,11 +159,15 @@ export function TodayView({ data, setData }: TodayViewProps) {
           ...data,
           regularTasks: (data.regularTasks || []).map(t => t.id === editingTask.id ? newTask : t)
         })
+        // Save the updated task to database
+        await saveRegularTask(newTask)
       } else {
         setData({
           ...data,
           regularTasks: [...(data.regularTasks || []), newTask]
         })
+        // Save the new task to database
+        await saveRegularTask(newTask)
       }
     }
 
@@ -162,23 +176,22 @@ export function TodayView({ data, setData }: TodayViewProps) {
 
   return (
     <div className="flex flex-col h-full max-h-full">
-      {/* Fixed Header Section */}
-      <div className="flex-shrink-0 space-y-6 pb-6">
+      {/* Weather Header with DateTime */}
+      <div className="flex-shrink-0 mb-6">
+        <WeatherHeader />
+      </div>
+
+      {/* Task Summary and Controls */}
+      <div className="flex-shrink-0 space-y-4 pb-6">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Today</h2>
-            <p className="text-gray-600">{new Date().toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}</p>
             <p className="text-sm text-gray-500 mt-1">
               All your tasks in one place • Create, manage, and complete tasks
             </p>
           </div>
-          <div className="text-sm text-gray-500">
-            {sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}
+          <div className="text-sm text-gray-500 text-right">
+            <div className="font-medium">{sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}</div>
           </div>
         </div>
 

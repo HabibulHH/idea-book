@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import type { AppData } from '@/types';
 import { EXECUTION_STAGES } from '@/types';
-import { updatePipelineStage, updateIdea, saveData } from '@/lib/storage';
+import { updatePipelineStage, updateIdea, saveExecutionPipeline, saveIdea } from '@/lib/storage';
 import { ArrowRight, CheckCircle, Circle, FileText, Calendar } from 'lucide-react';
 
 interface ExecutionPipelineProps {
@@ -23,13 +23,23 @@ export default function ExecutionPipeline({ data, setData }: ExecutionPipelinePr
   const handleStageUpdate = async (pipelineId: string, newStage: number) => {
     const updatedData = updatePipelineStage(data, pipelineId, newStage);
     setData(updatedData);
-    await saveData(updatedData);
+    
+    // Save the specific pipeline to database
+    const pipeline = updatedData.executionPipelines.find(p => p.id === pipelineId);
+    if (pipeline) {
+      await saveExecutionPipeline(pipeline);
+    }
   };
 
   const handleCompletePipeline = async (ideaId: string) => {
     const updatedData = updateIdea(data, ideaId, { status: 'completed' });
     setData(updatedData);
-    await saveData(updatedData);
+    
+    // Save the specific idea to database
+    const idea = updatedData.ideas.find(i => i.id === ideaId);
+    if (idea) {
+      await saveIdea(idea);
+    }
   };
 
   const handleNotesEdit = (pipelineId: string, currentNotes: string) => {
@@ -47,7 +57,13 @@ export default function ExecutionPipeline({ data, setData }: ExecutionPipelinePr
       ),
     };
     setData(updatedData);
-    await saveData(updatedData);
+    
+    // Save the specific pipeline to database
+    const pipeline = updatedData.executionPipelines.find(p => p.id === pipelineId);
+    if (pipeline) {
+      await saveExecutionPipeline(pipeline);
+    }
+    
     setEditingNotes(null);
     setNotes('');
   };

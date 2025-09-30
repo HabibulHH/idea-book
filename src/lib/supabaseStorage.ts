@@ -132,7 +132,6 @@ const convertDbToAppTypes = (dbData: any): AppData => {
     newsfeedPosts: dbData.newsfeed_posts || [],
     books: dbData.books || [],
     people: dbData.people || [],
-    lastUpdated: new Date().toISOString()
   }
 }
 
@@ -192,7 +191,6 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
       newsfeedPosts: [],
       books: [],
       people: [],
-      lastUpdated: new Date().toISOString()
     }
   }
 }
@@ -342,10 +340,12 @@ export const saveRepeatedTask = async (task: RepeatedTask): Promise<RepeatedTask
 // Delete repeated task from Supabase
 export const deleteRepeatedTaskFromSupabase = async (taskId: string): Promise<void> => {
   try {
+    const userId = await getCurrentUserId()
     const { error } = await supabase
       .from('repeated_tasks')
       .delete()
       .eq('id', taskId)
+      .eq('user_id', userId)
 
     if (error) {
       if (isNetworkError(error)) {
@@ -406,10 +406,12 @@ export const saveNonRepeatedTask = async (task: NonRepeatedTask): Promise<NonRep
 // Delete non-repeated task from Supabase
 export const deleteNonRepeatedTaskFromSupabase = async (taskId: string): Promise<void> => {
   try {
+    const userId = await getCurrentUserId()
     const { error } = await supabase
       .from('non_repeated_tasks')
       .delete()
       .eq('id', taskId)
+      .eq('user_id', userId)
 
     if (error) {
       if (isNetworkError(error)) {

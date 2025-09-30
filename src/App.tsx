@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { Loader } from '@/components/ui/loader'
 import IdeaParkingLot from '@/components/IdeaParkingLot'
 import ExecutionPipeline from '@/components/ExecutionPipeline'
 import { TodayView } from '@/components/TodayView'
@@ -10,7 +11,7 @@ import { Login } from '@/components/Login'
 import { ConfigModal } from '@/components/ConfigModal'
 import type { AppData } from '@/types'
 import data from '@/data.json'
-import { loadData, saveData } from '@/lib/storage'
+import { loadData } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 import { Lightbulb, ArrowRight, Calendar, Briefcase, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, Repeat, AlignJustify } from 'lucide-react'
 
@@ -186,18 +187,6 @@ function App() {
         
         setAppData(migratedData)
         
-        // Save cleaned data back to Supabase to remove duplicates from database
-        if (migratedData.nonRepeatedTasks.length !== loadedData.nonRepeatedTasks.length ||
-            migratedData.repeatedTasks.length !== loadedData.repeatedTasks.length ||
-            migratedData.nonRepeatedTasks.some(task => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id)) ||
-            migratedData.repeatedTasks.some(task => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id))) {
-          console.log('Saving cleaned and migrated data to database...')
-          try {
-            await saveData(migratedData)
-          } catch (error) {
-            console.error('Error saving cleaned data:', error)
-          }
-        }
       } catch (error) {
         console.error('Error loading data:', error)
         // Fall back to default data if loading fails
@@ -210,26 +199,6 @@ function App() {
   }, [])
 
 
-  // Auto-save data when it changes
-  useEffect(() => {
-    const autoSave = async () => {
-      try {
-        await saveData(appData)
-      } catch (error) {
-        console.error('Error auto-saving data:', error)
-      }
-    }
-
-    // Don't auto-save on initial load (when lastUpdated is from data.json)
-    if (appData.lastUpdated !== (data as AppData).lastUpdated) {
-      autoSave()
-    }
-  }, [appData])
-
-
-  useEffect(() => {
-    setAppData(prev => ({ ...prev, lastUpdated: new Date().toISOString() }))
-  }, [appData.ideas, appData.executionPipelines, appData.repeatedTasks, appData.nonRepeatedTasks, appData.regularTasks])
 
   const navigationItems = [
     { id: 'today', label: 'Today', icon: Sun },
@@ -243,7 +212,7 @@ function App() {
   const renderContent = () => {
     switch (activeSection) {
       case 'today':
-        return <TodayView data={appData} setData={setAppData} />
+        return <TodayView data={appData} setData={setAppData}  />
       case 'newsfeed':
         return <NewsFeed data={appData} setData={setAppData} />
       case 'books':
@@ -255,7 +224,7 @@ function App() {
       case 'pipeline':
         return <ExecutionPipeline data={appData} setData={setAppData} />
       default:
-        return <TodayView data={appData} setData={setAppData} />
+        return <TodayView data={appData} setData={setAppData}  />
     }
   }
 
@@ -264,7 +233,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <Loader size="lg" className="mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">Loading your tasks...</p>
         </div>
       </div>

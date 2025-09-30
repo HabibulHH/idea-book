@@ -44,7 +44,7 @@ export function TaskList({
   formData,
   setFormData,
   handleSubmit,
-  resetForm
+  resetForm,
 }: TaskListProps) {
   const today = new Date().toISOString().split('T')[0]
 
@@ -88,17 +88,34 @@ export function TaskList({
 
   const handleDelete = async (task: RepeatedTask | NonRepeatedTask | RegularTask) => {
     try {
+      console.log('Deleting task:', task)
+      console.log('Task has frequency:', 'frequency' in task)
+      console.log('Task has deadline:', 'deadline' in task)
+      console.log('Task type (if exists):', (task as any).taskType)
+      
+      
       // Check if ID is a valid UUID before attempting Supabase deletion
       const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id)
+      console.log('Is valid UUID:', isValidUUID)
+      
+      // Determine task type more reliably
+      const isRepeatedTask = 'frequency' in task
+      const isNonRepeatedTask = 'deadline' in task
+      const isRegularTask = !isRepeatedTask && !isNonRepeatedTask
+      
+      console.log('Task type detection:', { isRepeatedTask, isNonRepeatedTask, isRegularTask })
       
       if (isValidUUID) {
-        if ('frequency' in task) {
+        if (isRepeatedTask) {
+          console.log('Deleting repeated task from Supabase')
           // Delete from Supabase
           await deleteRepeatedTaskFromSupabase(task.id)
-        } else if ('deadline' in task) {
+        } else if (isNonRepeatedTask) {
+          console.log('Deleting non-repeated task from Supabase')
           // Delete from Supabase
           await deleteNonRepeatedTaskFromSupabase(task.id)
-        } else {
+        } else if (isRegularTask) {
+          console.log('Deleting regular task from Supabase')
           // Delete regular task from Supabase
           await deleteRegularTaskFromSupabase(task.id)
         }
@@ -107,41 +124,53 @@ export function TaskList({
       }
       
       // Always update local state regardless of Supabase deletion
-      if ('frequency' in task) {
+      if (isRepeatedTask) {
+        console.log('Updating local state for repeated task')
         setData({
           ...data,
           repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
         })
-      } else if ('deadline' in task) {
+      } else if (isNonRepeatedTask) {
+        console.log('Updating local state for non-repeated task')
         setData({
           ...data,
           nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
         })
-      } else {
+      } else if (isRegularTask) {
+        console.log('Updating local state for regular task')
         setData({
           ...data,
           regularTasks: (data.regularTasks || []).filter(t => t.id !== task.id)
         })
       }
+      
     } catch (error) {
       console.error('Error deleting task:', error)
       // Still update local state even if Supabase deletion fails
-      if ('frequency' in task) {
+      const isRepeatedTask = 'frequency' in task
+      const isNonRepeatedTask = 'deadline' in task
+      const isRegularTask = !isRepeatedTask && !isNonRepeatedTask
+      
+      if (isRepeatedTask) {
+        console.log('Error: Updating local state for repeated task')
         setData({
           ...data,
           repeatedTasks: data.repeatedTasks.filter(t => t.id !== task.id)
         })
-      } else if ('deadline' in task) {
+      } else if (isNonRepeatedTask) {
+        console.log('Error: Updating local state for non-repeated task')
         setData({
           ...data,
           nonRepeatedTasks: data.nonRepeatedTasks.filter(t => t.id !== task.id)
         })
-      } else {
+      } else if (isRegularTask) {
+        console.log('Error: Updating local state for regular task')
         setData({
           ...data,
           regularTasks: (data.regularTasks || []).filter(t => t.id !== task.id)
         })
       }
+      
     }
   }
 

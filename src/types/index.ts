@@ -151,7 +151,6 @@ export interface AppData {
   newsfeedPosts: NewsfeedPost[];
   books: Book[]; // Add books to your app data
   people: Person[]; // Add people to your app data
-  lastUpdated: string;
 }
 
 export const EXECUTION_STAGES: ExecutionStage[] = [
