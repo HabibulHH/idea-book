@@ -27,9 +27,10 @@ import { useLoading } from '@/hooks/useLoading'
 interface NewsFeedProps {
   data: { newsfeedPosts: NewsfeedPost[] }
   setData: (data: any) => void
+  user: any
 }
 
-export function NewsFeed({ }: NewsFeedProps) {
+export function NewsFeed({ user }: NewsFeedProps) {
   const [posts, setPosts] = useState<NewsfeedPost[]>([])
   const [tags, setTags] = useState<NewsfeedTag[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
@@ -54,9 +55,11 @@ export function NewsFeed({ }: NewsFeedProps) {
 
   // Load initial posts and tags
   useEffect(() => {
-    loadPosts()
-    loadTags()
-  }, [])
+    if (user?.id) {
+      loadPosts()
+      loadTags()
+    }
+  }, [user?.id])
 
   // Infinite scroll observer
   useEffect(() => {
@@ -89,7 +92,7 @@ export function NewsFeed({ }: NewsFeedProps) {
         post_type: selectedPostType || undefined
       }
       
-      const fetchedPosts = await NewsfeedService.getPosts(reset ? 0 : page, 10, filters)
+      const fetchedPosts = await NewsfeedService.getPosts(user?.id, reset ? 0 : page, 10, filters)
     
     if (reset) {
       // Ensure unique posts even on reset
@@ -162,19 +165,21 @@ export function NewsFeed({ }: NewsFeedProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (!user?.id) return
+    
     await withLoading(async () => {
       let urlMetadata = {}
       if (formData.url && formData.post_type === 'link') {
         urlMetadata = await NewsfeedService.extractUrlMetadata(formData.url)
       }
 
-      const newPost = await NewsfeedService.createPost({
+      const newPost = await NewsfeedService.createPost(user?.id, {
         title: formData.title,
         content: formData.content,
         url: formData.url || undefined,
         url_metadata: Object.keys(urlMetadata).length > 0 ? urlMetadata : undefined,
         post_type: formData.post_type,
-        user_id: 'admin',
+        user_id: user?.id,
         is_archived: false
       }, formData.selectedTags)
 
@@ -187,10 +192,10 @@ export function NewsFeed({ }: NewsFeedProps) {
   }
 
   const handleAddComment = async (postId: string) => {
-    if (!newComment.trim()) return
+    if (!newComment.trim() || !user?.id) return
 
     await withLoading(async () => {
-      const comment = await NewsfeedService.addComment(postId, newComment)
+      const comment = await NewsfeedService.addComment(user?.id, postId, newComment)
       if (comment) {
         setPosts(prev => prev.map(post => 
           post.id === postId 
@@ -203,8 +208,10 @@ export function NewsFeed({ }: NewsFeedProps) {
   }
 
   const handleArchivePost = async (postId: string) => {
+    if (!user?.id) return
+    
     await withLoading(async () => {
-      const success = await NewsfeedService.archivePost(postId)
+      const success = await NewsfeedService.archivePost(user?.id, postId)
       if (success) {
         setPosts(prev => prev.filter(post => post.id !== postId))
       }

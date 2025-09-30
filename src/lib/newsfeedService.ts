@@ -1,11 +1,10 @@
 import { supabase } from './supabase'
 import type { NewsfeedPost, NewsfeedComment, NewsfeedTag } from '@/types'
 
-const USER_ID = 'admin' // In a real app, this would come from authentication
-
 export class NewsfeedService {
   // Get posts with pagination, filtering, and search
   static async getPosts(
+    userId: string,
     page = 0, 
     limit = 10, 
     filters: {
@@ -23,7 +22,7 @@ export class NewsfeedService {
           newsfeed_tags(*)
         )
       `)
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .eq('is_archived', false)
 
     // Apply search filter
@@ -70,6 +69,7 @@ export class NewsfeedService {
 
   // Create a new post with tags
   static async createPost(
+    userId: string,
     post: Omit<NewsfeedPost, 'id' | 'created_at' | 'updated_at' | 'comments' | 'tags'>,
     tagIds: string[] = []
   ): Promise<NewsfeedPost | null> {
@@ -77,7 +77,7 @@ export class NewsfeedService {
       .from('newsfeed_posts')
       .insert([{
         ...post,
-        user_id: USER_ID
+        user_id: userId
       }])
       .select()
       .single()
@@ -100,12 +100,12 @@ export class NewsfeedService {
   }
 
   // Add a comment to a post
-  static async addComment(postId: string, content: string): Promise<NewsfeedComment | null> {
+  static async addComment(userId: string, postId: string, content: string): Promise<NewsfeedComment | null> {
     const { data, error } = await supabase
       .from('newsfeed_comments')
       .insert([{
         post_id: postId,
-        user_id: USER_ID,
+        user_id: userId,
         content
       }])
       .select()
@@ -195,12 +195,12 @@ export class NewsfeedService {
   }
 
   // Archive a post
-  static async archivePost(postId: string): Promise<boolean> {
+  static async archivePost(userId: string, postId: string): Promise<boolean> {
     const { error } = await supabase
       .from('newsfeed_posts')
       .update({ is_archived: true })
       .eq('id', postId)
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
 
     if (error) {
       console.error('Error archiving post:', error)

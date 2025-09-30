@@ -215,7 +215,7 @@ function App() {
       case 'today':
         return <TodayView data={appData} setData={setAppData}  />
       case 'newsfeed':
-        return <NewsFeed data={appData} setData={setAppData} />
+        return <NewsFeed data={appData} setData={setAppData} user={user} />
       case 'books':
         return <Books />
       case 'people':
