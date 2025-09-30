@@ -14,7 +14,7 @@ import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
-import { Lightbulb, ArrowRight, Calendar, Briefcase, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, Repeat, AlignJustify } from 'lucide-react'
+import { Lightbulb, ArrowRight, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, AlignJustify } from 'lucide-react'
 
 function App() {
   const [appData, setAppData] = useState<AppData>({
