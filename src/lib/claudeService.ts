@@ -1,10 +1,5 @@
 import type { AppData } from '@/types'
 
-interface ClaudeMessage {
-  role: 'user' | 'assistant'
-  content: string
-}
-
 interface ClaudeRequest {
   message: string
   context: {

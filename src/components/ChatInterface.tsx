@@ -84,27 +84,6 @@ export function ChatInterface({ data }: ChatInterfaceProps) {
     }
   }
 
-  const handleSummarizeToday = async () => {
-    const summaryPrompt = `Please provide a comprehensive summary of today's tasks and activities based on the following data:
-
-Daily Tasks: ${data.repeatedTasks.filter(task => task.isActive).length} active
-Office Tasks: ${data.nonRepeatedTasks.filter(task => task.status !== 'completed').length} pending
-Regular Tasks: ${(data.regularTasks || []).filter(task => task.status !== 'completed').length} pending
-Ideas: ${data.ideas.length} total ideas
-People: ${data.people.length} contacts
-
-Please provide insights on:
-1. Priority tasks for today
-2. Progress on ongoing projects
-3. Any overdue items that need attention
-4. Suggestions for productivity improvement
-5. Overall status and recommendations
-
-Be concise but comprehensive in your analysis.`
-
-    setInputValue(summaryPrompt)
-  }
-
   return (
     <div className="flex flex-col h-full">
       {/* Messages */}
