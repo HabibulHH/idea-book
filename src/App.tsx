@@ -9,6 +9,7 @@ import { Books } from '@/components/Books'
 import People from '@/components/People'
 import { Login } from '@/components/Login'
 import { ConfigModal } from '@/components/ConfigModal'
+import { ChatInterface } from '@/components/ChatInterface'
 import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData } from '@/lib/storage'
@@ -452,95 +453,37 @@ function App() {
         ${isRightSidebarCollapsed ? 'translate-x-full' : 'translate-x-0'}
         lg:block hidden
       `}>
-        <div className="p-6 flex-1">
-          <div className="mb-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">
+        <div className="flex flex-col h-full">
+          {/* Task Count Summary - Sticky */}
+          <div className="flex-shrink-0 p-6 pb-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">
               Task Overview
             </h2>
-            <p className="text-sm text-gray-600">
-              Your productivity insights
-            </p>
-          </div>
-
-          {/* Task Statistics */}
-          <div className="space-y-4 mb-6">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-900">Daily Tasks</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {appData.repeatedTasks.filter(task => task.isActive).length}
-                  </p>
-                </div>
-                <Repeat className="h-8 w-8 text-blue-600" />
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-gradient-to-br from-yellow-400 via-orange-300 to-yellow-200 p-3 rounded-lg border border-yellow-300 text-center">
+                <p className="text-xs font-medium text-yellow-900">Daily</p>
+                <p className="text-lg font-bold text-yellow-800">
+                  {appData.repeatedTasks.filter(task => task.isActive).length}
+                </p>
               </div>
-            </div>
-
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-900">Office Tasks</p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {appData.nonRepeatedTasks.filter(task => task.status !== 'completed').length}
-                  </p>
-                </div>
-                <Briefcase className="h-8 w-8 text-orange-600" />
+              <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-3 rounded-lg border border-blue-300 text-center">
+                <p className="text-xs font-medium text-blue-900">Office</p>
+                <p className="text-lg font-bold text-blue-800">
+                  {appData.nonRepeatedTasks.filter(task => task.status !== 'completed').length}
+                </p>
               </div>
-            </div>
-
-            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-900">Regular Tasks</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {(appData.regularTasks || []).filter(task => task.status !== 'completed').length}
-                  </p>
-                </div>
-                <Briefcase className="h-8 w-8 text-green-600" />
+              <div className="bg-gradient-to-br from-gray-400 via-gray-300 to-gray-200 p-3 rounded-lg border border-gray-300 text-center">
+                <p className="text-xs font-medium text-gray-900">Regular</p>
+                <p className="text-lg font-bold text-gray-800">
+                  {(appData.regularTasks || []).filter(task => task.status !== 'completed').length}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Actions</h3>
-            <Button
-              onClick={() => setActiveSection('today')}
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              View Today
-            </Button>
-            <Button
-              onClick={() => setActiveSection('ideas')}
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-            >
-              <Lightbulb className="h-4 w-4 mr-2" />
-              Idea Parking
-            </Button>
-            <Button
-              onClick={() => setActiveSection('people')}
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              People
-            </Button>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Activity</h3>
-            <div className="space-y-2 text-sm text-gray-600">
-              <p>• Completed 3 tasks today</p>
-              <p>• Added 2 new ideas</p>
-              <p>• Updated 1 contact</p>
-            </div>
+          {/* Chat Interface - Scrollable */}
+          <div className="flex-1 min-h-0  pb-2">
+            <ChatInterface data={appData} />
           </div>
         </div>
       </div>

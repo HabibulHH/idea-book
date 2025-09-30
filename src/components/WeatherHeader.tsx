@@ -78,8 +78,18 @@ export function WeatherHeader() {
     location: 'Dhaka'
   })
 
+  const [currentTime, setCurrentTime] = useState(new Date())
   const currentDate = new Date()
   const bengaliDate = getBengaliDate(currentDate)
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
 
   // Simulate weather data - in real app, fetch from weather API
   useEffect(() => {
@@ -162,37 +172,41 @@ export function WeatherHeader() {
 
       {/* Content */}
       <div className="relative z-10 flex items-center justify-between">
-        {/* Left side - DateTime */}
-        <div className="flex-1">
-          <div className="text-2xl font-bold mb-1">
+        {/* Left side - Date/Time */}
+        <div className="text-left">
+          <div className="text-4xl font-bold mb-1 transition-all duration-300 ease-in-out transform hover:scale-105">
+            {currentTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            })}
+          </div>
+          <div className="text-lg opacity-90">
             {currentDate.toLocaleDateString('en-US', {
               weekday: 'long',
-              year: 'numeric',
-              month: 'long',
+              month: 'short',
               day: 'numeric'
             })}
           </div>
-          <div className="text-lg mb-1">
-            {bengaliDate.bengaliDay}, {bengaliDate.day}ই {bengaliDate.bengaliMonth} {bengaliDate.bengaliYear} বঙ্গাব্দ
-          </div>
-          <div className="text-sm opacity-90 italic">
-            {bengaliDate.season}
+          <div className="text-sm opacity-75">
+            {bengaliDate.bengaliDay}, {bengaliDate.day}ই {bengaliDate.bengaliMonth}
           </div>
         </div>
         
-        {/* Right side - Weather */}
-        <div className="flex items-center space-x-4">
+        {/* Right side - Weather Details */}
+        <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3">
             {getWeatherIcon(weather.condition)}
             <div>
-              <div className="text-2xl font-bold">{weather.temperature}°C</div>
+              <div className="text-3xl font-bold">{weather.temperature}°C</div>
               <div className="text-sm opacity-90 capitalize">{weather.condition}</div>
             </div>
           </div>
           
           <div className="text-right">
-            <div className="text-sm opacity-90">{weather.location}</div>
-            <div className="text-xs opacity-75">{weather.humidity}% humidity</div>
+            <div className="text-lg font-semibold opacity-90">{weather.location}</div>
+            <div className="text-sm opacity-75">{weather.humidity}% humidity</div>
           </div>
         </div>
       </div>
