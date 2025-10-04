@@ -266,7 +266,7 @@ export default function People() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${
+        className={`h-5 w-5 ${
           i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
         }`}
       />
@@ -274,21 +274,21 @@ export default function People() {
   }
 
   const renderPersonCard = (person: Person) => (
-    <Card key={person.id} className="p-6 hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+    <Card key={person.id} className="p-6 hover:shadow-lg transition-shadow bg-white border border-gray-200 min-h-[240px] w-full">
       {/* Header Section */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-start gap-4">
+      <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start gap-4 flex-1 min-w-0">
           {/* Profile Picture */}
-          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+          <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-xl flex-shrink-0">
             {person.name.charAt(0).toUpperCase()}
           </div>
           
           {/* Name and Date */}
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2 leading-tight">
               {person.name}
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500">
               {new Date(person.createdAt).toLocaleDateString('en-US', { 
                 month: 'short', 
                 day: 'numeric', 
@@ -299,12 +299,12 @@ export default function People() {
         </div>
         
         {/* Options Menu */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0 ml-4">
           <Button
             onClick={() => openEditModal(person)}
             variant="ghost"
             size="sm"
-            className="p-2"
+            className="p-2 text-gray-600 hover:text-gray-800"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -312,7 +312,7 @@ export default function People() {
             onClick={() => handleDeletePerson(person.id)}
             variant="ghost"
             size="sm"
-            className="p-2 text-red-600 hover:text-red-700"
+            className="p-2 text-red-500 hover:text-red-700"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -320,22 +320,22 @@ export default function People() {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
+      <div className="border-t border-gray-200 mb-4"></div>
 
       {/* Contact Information */}
-      <div className="space-y-3 mb-4">
+      <div className="space-y-4 mb-5">
         {person.mobile && (
-          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <Phone className="h-4 w-4 text-gray-400" />
-            <a href={`tel:${person.mobile}`} className="hover:text-green-600 transition-colors">
+          <div className="flex items-center gap-4 text-base text-gray-600">
+            <Phone className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <a href={`tel:${person.mobile}`} className="hover:text-green-600 transition-colors font-medium">
               {person.mobile}
             </a>
           </div>
         )}
         {person.email && (
-          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <Mail className="h-4 w-4 text-gray-400" />
-            <a href={`mailto:${person.email}`} className="hover:text-green-600 transition-colors">
+          <div className="flex items-center gap-4 text-base text-gray-600">
+            <Mail className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <a href={`mailto:${person.email}`} className="hover:text-green-600 transition-colors font-medium">
               {person.email}
             </a>
           </div>
@@ -343,25 +343,25 @@ export default function People() {
         
         {/* Partnership/Relationship Status */}
         {person.connections && person.connections.length > 0 && (
-          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <Users className="h-4 w-4 text-gray-400" />
-            <span>Partnership</span>
+          <div className="flex items-center gap-4 text-base text-gray-600">
+            <Users className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <span className="font-medium">Partnership</span>
           </div>
         )}
       </div>
 
       {/* Skills */}
       {person.skills && person.skills.length > 0 && (
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {person.skills.slice(0, 3).map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-xs bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">
+        <div className="mb-5">
+          <div className="flex flex-wrap gap-3">
+            {person.skills.slice(0, 4).map((skill, index) => (
+              <Badge key={index} variant="secondary" className="text-sm bg-green-50 text-green-700 border-green-200 px-3 py-1">
                 {skill.skillName}
               </Badge>
             ))}
-            {person.skills.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{person.skills.length - 3} more
+            {person.skills.length > 4 && (
+              <Badge variant="outline" className="text-sm text-gray-600 border-gray-300 px-3 py-1">
+                +{person.skills.length - 4} more
               </Badge>
             )}
           </div>
@@ -370,11 +370,11 @@ export default function People() {
 
       {/* Helpfulness Rating */}
       {person.helpfulnessRating && person.helpfulnessRating > 0 && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             {renderStars(person.helpfulnessRating)}
           </div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-base text-gray-600 font-medium">
             ({person.helpfulnessRating}/5)
           </span>
         </div>
@@ -391,33 +391,39 @@ export default function People() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">People Directory</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Manage your business contacts and their helpfulness
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowConnectionModal(true)}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <UserPlus className="h-4 w-4" />
-            Add Connection
-          </Button>
-          <Button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Person
-          </Button>
+    <div className="flex flex-col h-full max-h-full">
+      {/* Sticky Header */}
+      <div className="flex-shrink-0 mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">People Directory</h1>
+            <p className="text-gray-600">
+              Manage your business contacts and their helpfulness
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowConnectionModal(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <UserPlus className="h-4 w-4" />
+              Add Connection
+            </Button>
+            <Button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Person
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto scrollbar-hide min-h-0">
 
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -485,8 +491,8 @@ export default function People() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
-          <p className="text-red-800 dark:text-red-200">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-800">{error}</p>
         </div>
       )}
 
@@ -494,10 +500,10 @@ export default function People() {
       {filteredPeople.length === 0 ? (
         <div className="text-center py-12">
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
             No people found
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-gray-600 mb-4">
             {searchQuery || selectedSkills.length > 0
               ? 'Try adjusting your search criteria'
               : 'Start by adding your first contact'
@@ -509,7 +515,7 @@ export default function People() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
           {filteredPeople.map(renderPersonCard)}
         </div>
       )}
@@ -517,10 +523,10 @@ export default function People() {
       {/* Add Person Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-gray-900">
                   Add New Person
                 </h2>
                 <Button
@@ -588,7 +594,7 @@ export default function People() {
                         <button
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, helpfulnessRating: 0 }))}
-                          className="ml-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                          className="ml-2 text-sm text-gray-500 hover:text-gray-700"
                         >
                           Clear
                         </button>
@@ -685,9 +691,9 @@ export default function People() {
                     <div className="mt-4 space-y-3">
                       <Label className="text-sm font-medium">Set Skill Levels</Label>
                       {formData.skills.map((skill, index) => (
-                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                        <div key={index} className="p-3 bg-gray-50 rounded-md">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="text-sm font-medium text-gray-700">
                               {skill.skillName.charAt(0).toUpperCase() + skill.skillName.slice(1)}
                             </span>
                           </div>
@@ -700,9 +706,9 @@ export default function People() {
                                   value={option.value}
                                   checked={skill.skillLevel === option.value}
                                   onChange={(e) => updateSkillLevel(skill.skillName, e.target.value)}
-                                  className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                  className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500 focus:ring-2"
                                 />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                <span className="text-sm text-gray-700">
                                   {option.label}
                                 </span>
                               </label>
@@ -765,10 +771,10 @@ export default function People() {
       {/* Edit Person Modal */}
       {showEditModal && editingPerson && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-gray-900">
                   Edit Person
                 </h2>
                 <Button
@@ -837,7 +843,7 @@ export default function People() {
                         <button
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, helpfulnessRating: 0 }))}
-                          className="ml-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                          className="ml-2 text-sm text-gray-500 hover:text-gray-700"
                         >
                           Clear
                         </button>
@@ -934,9 +940,9 @@ export default function People() {
                     <div className="mt-4 space-y-3">
                       <Label className="text-sm font-medium">Set Skill Levels</Label>
                       {formData.skills.map((skill, index) => (
-                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                        <div key={index} className="p-3 bg-gray-50 rounded-md">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="text-sm font-medium text-gray-700">
                               {skill.skillName.charAt(0).toUpperCase() + skill.skillName.slice(1)}
                             </span>
                           </div>
@@ -949,9 +955,9 @@ export default function People() {
                                   value={option.value}
                                   checked={skill.skillLevel === option.value}
                                   onChange={(e) => updateSkillLevel(skill.skillName, e.target.value)}
-                                  className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                  className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500 focus:ring-2"
                                 />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                <span className="text-sm text-gray-700">
                                   {option.label}
                                 </span>
                               </label>
@@ -1014,10 +1020,10 @@ export default function People() {
       {/* Connection Modal */}
       {showConnectionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
+          <div className="bg-white rounded-lg max-w-md w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-gray-900">
                   Create Connection
                 </h2>
                 <Button
@@ -1101,6 +1107,8 @@ export default function People() {
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -159,9 +159,9 @@ export const Books: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-6">
+    <div className="flex flex-col h-full max-h-full">
+      {/* Sticky Header */}
+      <div className="flex-shrink-0 mb-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">My Books</h1>
@@ -198,8 +198,11 @@ export const Books: React.FC = () => {
         </div>
       </div>
 
-      {/* Books List - Goodreads Style */}
-      <div className="p-6">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto scrollbar-hide min-h-0">
+          {/* Books List - Goodreads Style */}
+          <div className="p-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
           {filteredBooks.map((book) => (
             <div 
@@ -549,6 +552,8 @@ export const Books: React.FC = () => {
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   )
 }

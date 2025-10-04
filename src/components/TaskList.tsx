@@ -299,7 +299,7 @@ export function TaskList({
                       value={formData.frequency}
                       onValueChange={(value) => setFormData((prev: any) => ({ ...prev, frequency: value as any }))}
                     >
-                      <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-green-500">
+                      <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -324,7 +324,7 @@ export function TaskList({
                         value={formData.priority}
                         onValueChange={(value) => setFormData((prev: any) => ({ ...prev, priority: value as any }))}
                       >
-                        <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-green-500">
+                        <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -342,7 +342,7 @@ export function TaskList({
                       value={formData.priority}
                       onValueChange={(value) => setFormData((prev: any) => ({ ...prev, priority: value as any }))}
                     >
-                      <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-green-500">
+                      <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

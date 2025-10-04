@@ -228,32 +228,38 @@ export function NewsFeed({ user }: NewsFeedProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Newsfeed</h2>
-          <p className="text-gray-600 dark:text-gray-400">Your personal knowledge feed</p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowFilters(!showFilters)}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-          <Button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Post
-          </Button>
+    <div className="flex flex-col h-full max-h-full">
+      {/* Sticky Header */}
+      <div className="flex-shrink-0 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Newsfeed</h2>
+            <p className="text-gray-600">Your personal knowledge feed</p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+            </Button>
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Post
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto scrollbar-hide min-h-0">
+          {/* Search and Filters */}
       <div className="space-y-4">
         {/* Search Bar */}
         <div className="relative">
@@ -262,22 +268,22 @@ export function NewsFeed({ user }: NewsFeedProps) {
             placeholder="Search posts..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            className="pl-10 bg-white text-gray-900 border-gray-300"
           />
         </div>
 
         {/* Filters Panel */}
         {showFilters && (
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <Card className="bg-white border-gray-200">
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Filters</h3>
+                <h3 className="font-semibold text-gray-900">Filters</h3>
                 <div className="flex gap-2">
                   <Button
                     onClick={clearFilters}
                     variant="outline"
                     size="sm"
-                    className="text-gray-600 dark:text-gray-300"
+                    className="text-gray-600"
                   >
                     Clear All
                   </Button>
@@ -294,11 +300,11 @@ export function NewsFeed({ user }: NewsFeedProps) {
               <div className="space-y-4">
                 {/* Post Type Filter */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
                     Post Type
                   </label>
                   <Select value={selectedPostType || 'all'} onValueChange={handlePostTypeChange}>
-                    <SelectTrigger className="w-full dark:bg-gray-700 dark:border-gray-600">
+                    <SelectTrigger className="w-full bg-white border-gray-300">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -312,7 +318,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
 
                 {/* Tags Filter */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
                     Tags
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -342,7 +348,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
 
       {/* Add Post Form */}
       {showAddForm && (
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <Card className="bg-white border-gray-200">
           <CardHeader>
             <CardTitle className="text-lg">Add New Post</CardTitle>
           </CardHeader>
@@ -368,7 +374,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
                 placeholder="Title"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                className="bg-white text-gray-900 border-gray-300"
                 required
               />
 
@@ -377,7 +383,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
                   placeholder="URL"
                   value={formData.url}
                   onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
-                  className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                  className="bg-white text-gray-900 border-gray-300"
                   type="url"
                 />
               )}
@@ -387,12 +393,12 @@ export function NewsFeed({ user }: NewsFeedProps) {
                 value={formData.content}
                 onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                 rows={3}
-                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                className="bg-white text-gray-900 border-gray-300"
               />
 
               {/* Tag Selection */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Tags
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -447,12 +453,12 @@ export function NewsFeed({ user }: NewsFeedProps) {
       {/* Posts Feed */}
       <div className="space-y-4">
         {posts.map((post) => (
-          <Card key={post.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <Card key={post.id} className="bg-white border-gray-200">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-lg font-semibold text-gray-900">
                       {post.title}
                     </h3>
                     {post.post_type === 'link' && (
@@ -464,7 +470,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
                   </div>
                   
                   {post.content && (
-                    <p className="text-gray-600 dark:text-gray-300 mb-3">
+                    <p className="text-gray-600 mb-3">
                       {post.content}
                     </p>
                   )}
@@ -476,7 +482,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
                         href={post.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        className="text-blue-600 hover:underline flex items-center gap-1"
                       >
                         {post.url_metadata?.site_name || post.url}
                         <ExternalLink className="h-3 w-3" />
@@ -501,7 +507,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
                       {formatDate(post.created_at)}
@@ -517,7 +523,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleArchivePost(post.id)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-400 hover:text-gray-600"
                   loading={isLoadingKey(`archive-${post.id}`)}
                 >
                   <Archive className="h-4 w-4" />
@@ -525,20 +531,20 @@ export function NewsFeed({ user }: NewsFeedProps) {
               </div>
 
               {/* Comments Section */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="border-t border-gray-200 pt-4">
                 <div className="space-y-3">
                   {post.comments?.map((comment) => (
                     <div key={comment.id} className="flex gap-3">
-                      <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-gray-600" />
                       </div>
                       <div className="flex-1">
-                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                          <p className="text-sm text-gray-800 dark:text-gray-200">
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <p className="text-sm text-gray-800">
                             {comment.content}
                           </p>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-500 mt-1">
                           {formatDate(comment.created_at)}
                         </p>
                       </div>
@@ -546,15 +552,15 @@ export function NewsFeed({ user }: NewsFeedProps) {
                   ))}
 
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-gray-600" />
                     </div>
                     <div className="flex-1 flex gap-2">
                       <Input
                         placeholder="Add a comment..."
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        className="flex-1 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                        className="flex-1 bg-white text-gray-900 border-gray-300"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
                             handleAddComment(post.id)
@@ -580,7 +586,7 @@ export function NewsFeed({ user }: NewsFeedProps) {
         {/* Loading indicator */}
         {loading && (
           <div className="text-center py-4">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-white"></div>
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
           </div>
         )}
 
@@ -588,20 +594,22 @@ export function NewsFeed({ user }: NewsFeedProps) {
         <div ref={observerRef} className="h-4" />
 
         {!hasMore && posts.length > 0 && (
-          <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-4 text-gray-500">
             No more posts to load
           </div>
         )}
 
         {posts.length === 0 && !loading && (
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <Card className="bg-white border-gray-200">
             <CardContent className="p-8 text-center">
-              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-              <p className="text-gray-500 dark:text-gray-400 mb-2">No posts yet</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">Add your first post to get started!</p>
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-500 mb-2">No posts yet</p>
+              <p className="text-sm text-gray-400">Add your first post to get started!</p>
             </CardContent>
           </Card>
         )}
+          </div>
+        </div>
       </div>
     </div>
   )
