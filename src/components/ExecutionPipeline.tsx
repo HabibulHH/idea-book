@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { AppData } from '@/types';
 import { EXECUTION_STAGES } from '@/types';
