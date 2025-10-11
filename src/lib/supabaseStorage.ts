@@ -132,6 +132,21 @@ const convertDbToAppTypes = (dbData: any): AppData => {
     newsfeedPosts: dbData.newsfeed_posts || [],
     books: dbData.books || [],
     people: dbData.people || [],
+    projects: (dbData.projects || []).map((project: any) => ({
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      priority: project.priority,
+      status: project.status,
+      startDate: project.start_date,
+      endDate: project.end_date,
+      createdAt: project.created_at,
+      updatedAt: project.updated_at,
+      tags: project.tags || [],
+      milestones: project.milestones || [],
+      stages: project.stages || [],
+      bulkTasks: project.bulk_tasks || []
+    }))
   }
 }
 
@@ -140,12 +155,13 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
   try {
     const userId = await getCurrentUserId()
 
-    const [ideasResult, pipelinesResult, repeatedTasksResult, nonRepeatedTasksResult, regularTasksResult] = await Promise.all([
+    const [ideasResult, pipelinesResult, repeatedTasksResult, nonRepeatedTasksResult, regularTasksResult, projectsResult] = await Promise.all([
       supabase.from('ideas').select('*').eq('user_id', userId),
       supabase.from('execution_pipelines').select('*').eq('user_id', userId),
       supabase.from('repeated_tasks').select('*').eq('user_id', userId),
       supabase.from('non_repeated_tasks').select('*').eq('user_id', userId),
-      supabase.from('regular_tasks').select('*').eq('user_id', userId)
+      supabase.from('regular_tasks').select('*').eq('user_id', userId),
+      supabase.from('projects').select('*').eq('user_id', userId)
     ])
 
     // Check for network errors and handle gracefully
@@ -165,19 +181,25 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
       console.warn('Network error loading non-repeated tasks, using fallback data')
       throw new Error('NETWORK_ERROR')
     }
+    if (projectsResult.error && isNetworkError(projectsResult.error)) {
+      console.warn('Network error loading projects, using fallback data')
+      throw new Error('NETWORK_ERROR')
+    }
 
     // Check for table not found errors (PGRST205) and handle gracefully
     if (ideasResult.error && !isTableMissingError(ideasResult.error)) throw ideasResult.error
     if (pipelinesResult.error && !isTableMissingError(pipelinesResult.error)) throw pipelinesResult.error
     if (repeatedTasksResult.error && !isTableMissingError(repeatedTasksResult.error)) throw repeatedTasksResult.error
     if (nonRepeatedTasksResult.error && !isTableMissingError(nonRepeatedTasksResult.error)) throw nonRepeatedTasksResult.error
+    if (projectsResult.error && !isTableMissingError(projectsResult.error)) throw projectsResult.error
 
     return convertDbToAppTypes({
       ideas: ideasResult.data || [],
       execution_pipelines: pipelinesResult.data || [],
       repeated_tasks: repeatedTasksResult.data || [],
       non_repeated_tasks: nonRepeatedTasksResult.data || [],
-      regular_tasks: regularTasksResult.data || []
+      regular_tasks: regularTasksResult.data || [],
+      projects: projectsResult.data || []
     })
   } catch (error) {
     console.error('Error loading data from Supabase:', error)
@@ -191,6 +213,7 @@ export const loadDataFromSupabase = async (): Promise<AppData> => {
       newsfeedPosts: [],
       books: [],
       people: [],
+      projects: []
     }
   }
 }

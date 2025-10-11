@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, Target, Plus, Filter } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { AppData, RepeatedTask, NonRepeatedTask, RegularTask } from '@/types'
+import type { AppData } from '@/types'
 import { ActivityDashboard } from './ActivityDashboard'
-import { TimeSlotPanel } from './TimeSlotPanel'
 import { TimeSlotSelector } from './TimeSlotSelector'
 
 interface NewTodayViewProps {
@@ -51,10 +50,10 @@ const TIME_SLOTS = {
   }
 }
 
-export function NewTodayView({ data, setData }: NewTodayViewProps) {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+export function NewTodayView({ data }: NewTodayViewProps) {
+  const [selectedDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<'all' | 'morning' | 'day' | 'night'>('all')
-  const [selectedProject, setSelectedProject] = useState<string>('all')
+  const [selectedProject] = useState<string>('all')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [projects, setProjects] = useState<string[]>([])
 
@@ -64,17 +63,17 @@ export function NewTodayView({ data, setData }: NewTodayViewProps) {
     
     // Extract projects from repeated tasks
     data.repeatedTasks.forEach(task => {
-      if (task.project) allProjects.add(task.project)
+      if (task.projectId) allProjects.add(task.projectId)
     })
     
     // Extract projects from non-repeated tasks
     data.nonRepeatedTasks.forEach(task => {
-      if (task.project) allProjects.add(task.project)
+      if (task.projectId) allProjects.add(task.projectId)
     })
     
     // Extract projects from regular tasks
     data.regularTasks.forEach(task => {
-      if (task.project) allProjects.add(task.project)
+      if (task.projectId) allProjects.add(task.projectId)
     })
     
     setProjects(Array.from(allProjects))
@@ -92,8 +91,8 @@ export function NewTodayView({ data, setData }: NewTodayViewProps) {
           id: task.id,
           title: task.title,
           description: task.description,
-          timeSlot: task.timeSlot || 'day',
-          project: task.project,
+          timeSlot: (task.timeSlot && task.timeSlot !== 'no-time-slot') ? task.timeSlot : 'day',
+          project: task.projectId,
           priority: task.priority,
           status: task.lastCompleted === today ? 'completed' : 'pending',
           type: 'repeated'
@@ -108,8 +107,8 @@ export function NewTodayView({ data, setData }: NewTodayViewProps) {
           id: task.id,
           title: task.title,
           description: task.description,
-          timeSlot: task.timeSlot || 'day',
-          project: task.project,
+          timeSlot: (task.timeSlot && task.timeSlot !== 'no-time-slot') ? task.timeSlot : 'day',
+          project: task.projectId,
           priority: task.priority,
           status: task.status === 'completed' ? 'completed' : 'pending',
           deadline: task.deadline,
@@ -125,10 +124,10 @@ export function NewTodayView({ data, setData }: NewTodayViewProps) {
           id: task.id,
           title: task.title,
           description: task.description,
-          timeSlot: task.timeSlot || 'day',
-          project: task.project,
+          timeSlot: (task.timeSlot && task.timeSlot !== 'no-time-slot') ? task.timeSlot : 'day',
+          project: task.projectId,
           priority: task.priority,
-          status: task.status,
+          status: task.status === 'in-progress' ? 'in_progress' : task.status,
           type: 'regular'
         })
       }
@@ -151,15 +150,6 @@ export function NewTodayView({ data, setData }: NewTodayViewProps) {
     night: filteredTasks.filter(task => task.timeSlot === 'night')
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
 
   return (
     <div className=" space-y-6">

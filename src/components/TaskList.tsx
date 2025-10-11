@@ -26,7 +26,7 @@ interface TaskListProps {
     deadline: string
     priority: 'low' | 'medium' | 'high' | 'urgent'
     projectId: string
-    timeSlot: 'morning' | 'day' | 'night' | ''
+    timeSlot: 'morning' | 'day' | 'night' | 'no-time-slot'
   }
   setFormData: (data: any) => void
   handleSubmit: (e: React.FormEvent) => void
@@ -367,7 +367,7 @@ export function TaskList({
                       <SelectValue placeholder="Select Project" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Project</SelectItem>
+                      <SelectItem value="no-project">No Project</SelectItem>
                       {data.projects?.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}
@@ -384,7 +384,7 @@ export function TaskList({
                       <SelectValue placeholder="Time Slot" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Time Slot</SelectItem>
+                      <SelectItem value="no-time-slot">No Time Slot</SelectItem>
                       <SelectItem value="morning">Morning</SelectItem>
                       <SelectItem value="day">Day</SelectItem>
                       <SelectItem value="night">Night</SelectItem>

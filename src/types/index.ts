@@ -34,7 +34,7 @@ export interface RepeatedTask {
   lastCompleted?: string;
   streak: number;
   createdAt: string;
-  timeSlot?: 'morning' | 'day' | 'night';
+  timeSlot?: 'morning' | 'day' | 'night' | 'no-time-slot';
   projectId?: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
 }
@@ -48,7 +48,7 @@ export interface NonRepeatedTask {
   status: 'pending' | 'in-progress' | 'completed' | 'overdue';
   createdAt: string;
   completedAt?: string;
-  timeSlot?: 'morning' | 'day' | 'night';
+  timeSlot?: 'morning' | 'day' | 'night' | 'no-time-slot';
   projectId?: string;
 }
 
@@ -60,7 +60,7 @@ export interface RegularTask {
   status: 'pending' | 'in-progress' | 'completed';
   createdAt: string;
   completedAt?: string;
-  timeSlot?: 'morning' | 'day' | 'night';
+  timeSlot?: 'morning' | 'day' | 'night' | 'no-time-slot';
   projectId?: string;
 }
 

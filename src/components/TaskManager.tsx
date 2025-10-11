@@ -28,8 +28,8 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
     frequency: 'daily' as 'daily' | 'weekly' | 'monthly',
     deadline: '',
     priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
-    projectId: '',
-    timeSlot: '' as 'morning' | 'day' | 'night' | ''
+    projectId: 'no-project',
+    timeSlot: 'no-time-slot' as 'morning' | 'day' | 'night' | 'no-time-slot'
   })
 
   const resetForm = () => {
@@ -39,8 +39,8 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
       frequency: 'daily',
       deadline: '',
       priority: 'medium',
-      projectId: '',
-      timeSlot: ''
+      projectId: 'no-project',
+      timeSlot: 'no-time-slot'
     })
     setShowForm(false)
     setEditingTask(null)
@@ -56,12 +56,13 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
           title: formData.title,
           description: formData.description,
           frequency: formData.frequency,
+          priority: formData.priority,
           isActive: true,
           streak: editingTask ? (editingTask as RepeatedTask).streak : 0,
           lastCompleted: editingTask ? (editingTask as RepeatedTask).lastCompleted : undefined,
           createdAt: editingTask?.createdAt || new Date().toISOString(),
-          projectId: formData.projectId || undefined,
-          timeSlot: formData.timeSlot || undefined
+          projectId: formData.projectId === 'no-project' ? undefined : formData.projectId || undefined,
+          timeSlot: formData.timeSlot === 'no-time-slot' ? undefined : formData.timeSlot || undefined
         }
 
         if (editingTask) {
@@ -83,8 +84,8 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
           status: editingTask ? (editingTask as NonRepeatedTask).status : 'pending',
           createdAt: editingTask?.createdAt || new Date().toISOString(),
           completedAt: editingTask ? (editingTask as NonRepeatedTask).completedAt : undefined,
-          projectId: formData.projectId || undefined,
-          timeSlot: formData.timeSlot || undefined
+          projectId: formData.projectId === 'no-project' ? undefined : formData.projectId || undefined,
+          timeSlot: formData.timeSlot === 'no-time-slot' ? undefined : formData.timeSlot || undefined
         }
 
         if (editingTask) {
@@ -105,8 +106,8 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
           status: editingTask ? (editingTask as RegularTask).status : 'pending',
           createdAt: editingTask?.createdAt || new Date().toISOString(),
           completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined,
-          projectId: formData.projectId || undefined,
-          timeSlot: formData.timeSlot || undefined
+          projectId: formData.projectId === 'no-project' ? undefined : formData.projectId || undefined,
+          timeSlot: formData.timeSlot === 'no-time-slot' ? undefined : formData.timeSlot || undefined
         }
 
         if (editingTask) {
@@ -133,7 +134,9 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
       deadline: type === 'oneTime' ? (task as NonRepeatedTask).deadline : '',
       priority: type === 'oneTime' || type === 'regular' ? 
         (type === 'oneTime' ? (task as NonRepeatedTask).priority : (task as RegularTask).priority) : 
-        'medium'
+        'medium',
+      projectId: task.projectId || 'no-project',
+      timeSlot: task.timeSlot || 'no-time-slot'
     })
     setShowForm(true)
   }
@@ -373,7 +376,7 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
                       <SelectValue placeholder="Select Project" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Project</SelectItem>
+                      <SelectItem value="no-project">No Project</SelectItem>
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}
@@ -384,13 +387,13 @@ export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskM
 
                   <Select
                     value={formData.timeSlot}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, timeSlot: value }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, timeSlot: value as 'morning' | 'day' | 'night' | 'no-time-slot' }))}
                   >
                     <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
                       <SelectValue placeholder="Time Slot" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Time Slot</SelectItem>
+                      <SelectItem value="no-time-slot">No Time Slot</SelectItem>
                       <SelectItem value="morning">Morning</SelectItem>
                       <SelectItem value="day">Day</SelectItem>
                       <SelectItem value="night">Night</SelectItem>

@@ -31,6 +31,7 @@ export const loadData = async (): Promise<AppData> => {
       newsfeedPosts: [],
       books: [],
       people: [],
+      projects: []
     };
   }
 };

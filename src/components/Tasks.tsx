@@ -19,14 +19,22 @@ export function Tasks({ data, setData }: TasksProps) {
   const [sortBy, setSortBy] = useState<'priority' | 'created' | 'deadline' | 'type'>('priority')
   const [filterBy, setFilterBy] = useState<'all' | 'daily' | 'office' | 'regular'>('all')
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string
+    description: string
+    frequency: 'daily' | 'weekly' | 'monthly'
+    deadline: string
+    priority: 'low' | 'medium' | 'high' | 'urgent'
+    projectId: string
+    timeSlot: 'morning' | 'day' | 'night' | 'no-time-slot'
+  }>({
     title: '',
     description: '',
-    frequency: 'daily' as 'daily' | 'weekly' | 'monthly',
+    frequency: 'daily',
     deadline: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
-    projectId: '',
-    timeSlot: '' as 'morning' | 'day' | 'night' | ''
+    priority: 'medium',
+    projectId: 'no-project',
+    timeSlot: 'no-time-slot'
   })
 
   const today = new Date().toISOString().split('T')[0]
@@ -82,8 +90,8 @@ export function Tasks({ data, setData }: TasksProps) {
       frequency: 'daily',
       deadline: '',
       priority: 'medium',
-      projectId: '',
-      timeSlot: ''
+      projectId: 'no-project',
+      timeSlot: 'no-time-slot'
     })
     setShowForm(false)
     setEditingTask(null)
@@ -104,8 +112,8 @@ export function Tasks({ data, setData }: TasksProps) {
         streak: editingTask ? (editingTask as RepeatedTask).streak : 0,
         lastCompleted: editingTask ? (editingTask as RepeatedTask).lastCompleted : undefined,
         createdAt: editingTask?.createdAt || new Date().toISOString(),
-        projectId: formData.projectId || undefined,
-        timeSlot: formData.timeSlot || undefined
+        projectId: formData.projectId === 'no-project' ? undefined : formData.projectId || undefined,
+        timeSlot: formData.timeSlot === 'no-time-slot' ? undefined : formData.timeSlot || undefined
       }
 
       if (editingTask) {
@@ -133,8 +141,8 @@ export function Tasks({ data, setData }: TasksProps) {
         status: editingTask ? (editingTask as NonRepeatedTask).status : 'pending',
         createdAt: editingTask?.createdAt || new Date().toISOString(),
         completedAt: editingTask ? (editingTask as NonRepeatedTask).completedAt : undefined,
-        projectId: formData.projectId || undefined,
-        timeSlot: formData.timeSlot || undefined
+        projectId: formData.projectId === 'no-project' ? undefined : formData.projectId || undefined,
+        timeSlot: formData.timeSlot === 'no-time-slot' ? undefined : formData.timeSlot || undefined
       }
 
       if (editingTask) {
@@ -161,8 +169,8 @@ export function Tasks({ data, setData }: TasksProps) {
         status: editingTask ? (editingTask as RegularTask).status : 'pending',
         createdAt: editingTask?.createdAt || new Date().toISOString(),
         completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined,
-        projectId: formData.projectId || undefined,
-        timeSlot: formData.timeSlot || undefined
+        projectId: formData.projectId === 'no-project' ? undefined : formData.projectId || undefined,
+        timeSlot: formData.timeSlot === 'no-time-slot' ? undefined : formData.timeSlot || undefined
       }
 
       if (editingTask) {
