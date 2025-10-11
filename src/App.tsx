@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
 import IdeaParkingLot from '@/components/IdeaParkingLot'
 import ExecutionPipeline from '@/components/ExecutionPipeline'
-import { TodayView } from '@/components/TodayView'
+import { Tasks } from '@/components/Tasks'
+import { NewTodayView } from '@/components/NewTodayView'
 import { NewsFeed } from '@/components/NewsFeed'
 import { Books } from '@/components/Books'
 import People from '@/components/People'
@@ -14,7 +15,7 @@ import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
-import { Lightbulb, ArrowRight, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, AlignJustify } from 'lucide-react'
+import { Lightbulb, ArrowRight, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, AlignJustify, Calendar } from 'lucide-react'
 
 function App() {
   const [appData, setAppData] = useState<AppData>({
@@ -202,7 +203,8 @@ function App() {
 
 
   const navigationItems = [
-    { id: 'today', label: 'Today', icon: Sun },
+    { id: 'tasks', label: 'Tasks', icon: Sun },
+    { id: 'newtoday', label: 'NewToday', icon: Calendar },
     { id: 'newsfeed', label: 'Newsfeed', icon: Newspaper },
     { id: 'books', label: 'Books', icon: BookOpen },
     { id: 'people', label: 'People', icon: Users },
@@ -212,8 +214,10 @@ function App() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'today':
-        return <TodayView data={appData} setData={setAppData}  />
+      case 'tasks':
+        return <Tasks data={appData} setData={setAppData}  />
+      case 'newtoday':
+        return <NewTodayView data={appData} setData={setAppData} />
       case 'newsfeed':
         return <NewsFeed data={appData} setData={setAppData} user={user} />
       case 'books':
@@ -225,7 +229,7 @@ function App() {
       case 'pipeline':
         return <ExecutionPipeline data={appData} setData={setAppData} />
       default:
-        return <TodayView data={appData} setData={setAppData}  />
+        <Tasks data={appData} setData={setAppData} />
     }
   }
 

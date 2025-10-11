@@ -34,6 +34,9 @@ export interface RepeatedTask {
   lastCompleted?: string;
   streak: number;
   createdAt: string;
+  timeSlot?: 'morning' | 'day' | 'night';
+  project?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
 }
 
 export interface NonRepeatedTask {
@@ -45,6 +48,8 @@ export interface NonRepeatedTask {
   status: 'pending' | 'in-progress' | 'completed' | 'overdue';
   createdAt: string;
   completedAt?: string;
+  timeSlot?: 'morning' | 'day' | 'night';
+  project?: string;
 }
 
 export interface RegularTask {
@@ -55,6 +60,8 @@ export interface RegularTask {
   status: 'pending' | 'in-progress' | 'completed';
   createdAt: string;
   completedAt?: string;
+  timeSlot?: 'morning' | 'day' | 'night';
+  project?: string;
 }
 
 export interface NewsfeedPost {

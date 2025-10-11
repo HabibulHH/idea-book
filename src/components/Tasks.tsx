@@ -7,12 +7,12 @@ import { TaskList } from './TaskList'
 import { saveRepeatedTask, saveNonRepeatedTask, saveRegularTask } from '@/lib/storage'
 import { WeatherHeader } from './WeatherHeader'
 
-interface TodayViewProps {
+interface TasksProps {
   data: AppData
   setData: (data: AppData) => void
 }
 
-export function TodayView({ data, setData }: TodayViewProps) {
+export function Tasks({ data, setData }: TasksProps) {
   const [showForm, setShowForm] = useState(false)
   const [taskType, setTaskType] = useState<'daily' | 'office' | 'regular'>('daily')
   const [editingTask, setEditingTask] = useState<RepeatedTask | NonRepeatedTask | RegularTask | null>(null)
@@ -95,6 +95,7 @@ export function TodayView({ data, setData }: TodayViewProps) {
         title: formData.title,
         description: formData.description,
         frequency: formData.frequency,
+        priority: formData.priority,
         isActive: true,
         streak: editingTask ? (editingTask as RepeatedTask).streak : 0,
         lastCompleted: editingTask ? (editingTask as RepeatedTask).lastCompleted : undefined,
