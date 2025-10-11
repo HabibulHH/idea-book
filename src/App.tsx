@@ -448,21 +448,21 @@ function App() {
               Task Overview
             </h2>
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-gradient-to-br from-yellow-400 via-orange-300 to-yellow-200 p-3 rounded-lg border border-yellow-300 text-center hover-scale transition-smooth fade-in-delay-1">
-                <p className="text-xs font-medium text-yellow-900">Daily</p>
-                <p className="text-lg font-bold text-yellow-800">
+              <div className="bg-gradient-to-br from-green-400 via-green-300 to-green-200 p-3 rounded-lg border border-green-300 text-center hover-scale transition-all duration-200 hover:shadow-lg fade-in-delay-1 hover-lift">
+                <p className="text-xs font-medium text-green-900">Daily</p>
+                <p className="text-lg font-bold text-green-800 transition-all duration-200 hover:scale-110">
                   {appData.repeatedTasks.filter(task => task.isActive).length}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-3 rounded-lg border border-blue-300 text-center hover-scale transition-smooth fade-in-delay-2">
+              <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-3 rounded-lg border border-blue-300 text-center hover-scale transition-all duration-200 hover:shadow-lg fade-in-delay-2 hover-lift">
                 <p className="text-xs font-medium text-blue-900">Office</p>
-                <p className="text-lg font-bold text-blue-800">
+                <p className="text-lg font-bold text-blue-800 transition-all duration-200 hover:scale-110">
                   {appData.nonRepeatedTasks.filter(task => task.status !== 'completed').length}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-gray-400 via-gray-300 to-gray-200 p-3 rounded-lg border border-gray-300 text-center hover-scale transition-smooth fade-in-delay-3">
-                <p className="text-xs font-medium text-gray-900">Regular</p>
-                <p className="text-lg font-bold text-gray-800">
+              <div className="bg-gradient-to-br from-purple-400 via-purple-300 to-purple-200 p-3 rounded-lg border border-purple-300 text-center hover-scale transition-all duration-200 hover:shadow-lg fade-in-delay-3 hover-lift">
+                <p className="text-xs font-medium text-purple-900">Regular</p>
+                <p className="text-lg font-bold text-purple-800 transition-all duration-200 hover:scale-110">
                   {(appData.regularTasks || []).filter(task => task.status !== 'completed').length}
                 </p>
               </div>
