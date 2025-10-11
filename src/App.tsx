@@ -195,8 +195,8 @@ function App() {
 
 
   const navigationItems = [
+    { id: 'newtoday', label: 'Today', icon: Calendar, path: '/newtoday' },
     { id: 'tasks', label: 'Tasks', icon: Sun, path: '/tasks' },
-    { id: 'newtoday', label: 'NewToday', icon: Calendar, path: '/newtoday' },
     { id: 'newsfeed', label: 'Newsfeed', icon: Newspaper, path: '/newsfeed' },
     { id: 'books', label: 'Books', icon: BookOpen, path: '/books' },
     { id: 'people', label: 'People', icon: Users, path: '/people' },
