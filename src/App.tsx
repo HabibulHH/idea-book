@@ -9,7 +9,7 @@ import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
-import { Lightbulb, ArrowRight, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, AlignJustify, Calendar } from 'lucide-react'
+import { Lightbulb, ArrowRight, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, AlignJustify, Calendar, FolderOpen } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 function App() {
@@ -200,6 +200,7 @@ function App() {
     { id: 'newsfeed', label: 'Newsfeed', icon: Newspaper, path: '/newsfeed' },
     { id: 'books', label: 'Books', icon: BookOpen, path: '/books' },
     { id: 'people', label: 'People', icon: Users, path: '/people' },
+    { id: 'projects', label: 'Projects', icon: FolderOpen, path: '/projects' },
     { id: 'ideas', label: 'Ideas', icon: Lightbulb, path: '/ideas' },
     { id: 'pipeline', label: 'Pipeline', icon: ArrowRight, path: '/pipeline' },
   ]

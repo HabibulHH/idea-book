@@ -24,7 +24,9 @@ export function Tasks({ data, setData }: TasksProps) {
     description: '',
     frequency: 'daily' as 'daily' | 'weekly' | 'monthly',
     deadline: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent'
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
+    projectId: '',
+    timeSlot: '' as 'morning' | 'day' | 'night' | ''
   })
 
   const today = new Date().toISOString().split('T')[0]
@@ -79,7 +81,9 @@ export function Tasks({ data, setData }: TasksProps) {
       description: '',
       frequency: 'daily',
       deadline: '',
-      priority: 'medium'
+      priority: 'medium',
+      projectId: '',
+      timeSlot: ''
     })
     setShowForm(false)
     setEditingTask(null)
@@ -99,7 +103,9 @@ export function Tasks({ data, setData }: TasksProps) {
         isActive: true,
         streak: editingTask ? (editingTask as RepeatedTask).streak : 0,
         lastCompleted: editingTask ? (editingTask as RepeatedTask).lastCompleted : undefined,
-        createdAt: editingTask?.createdAt || new Date().toISOString()
+        createdAt: editingTask?.createdAt || new Date().toISOString(),
+        projectId: formData.projectId || undefined,
+        timeSlot: formData.timeSlot || undefined
       }
 
       if (editingTask) {
@@ -126,7 +132,9 @@ export function Tasks({ data, setData }: TasksProps) {
         priority: formData.priority,
         status: editingTask ? (editingTask as NonRepeatedTask).status : 'pending',
         createdAt: editingTask?.createdAt || new Date().toISOString(),
-        completedAt: editingTask ? (editingTask as NonRepeatedTask).completedAt : undefined
+        completedAt: editingTask ? (editingTask as NonRepeatedTask).completedAt : undefined,
+        projectId: formData.projectId || undefined,
+        timeSlot: formData.timeSlot || undefined
       }
 
       if (editingTask) {
@@ -152,7 +160,9 @@ export function Tasks({ data, setData }: TasksProps) {
         priority: formData.priority,
         status: editingTask ? (editingTask as RegularTask).status : 'pending',
         createdAt: editingTask?.createdAt || new Date().toISOString(),
-        completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined
+        completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined,
+        projectId: formData.projectId || undefined,
+        timeSlot: formData.timeSlot || undefined
       }
 
       if (editingTask) {

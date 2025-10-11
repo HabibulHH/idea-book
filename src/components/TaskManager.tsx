@@ -14,9 +14,10 @@ interface TaskManagerProps {
   type: 'repeated' | 'oneTime' | 'regular'
   tasks: any[]
   onUpdateTasks: (tasks: any[]) => void
+  projects?: any[]
 }
 
-export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
+export function TaskManager({ type, tasks, onUpdateTasks, projects = [] }: TaskManagerProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState<RepeatedTask | NonRepeatedTask | RegularTask | null>(null)
   const { isLoadingKey, withLoading } = useLoading()
@@ -26,7 +27,9 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
     description: '',
     frequency: 'daily' as 'daily' | 'weekly' | 'monthly',
     deadline: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent'
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
+    projectId: '',
+    timeSlot: '' as 'morning' | 'day' | 'night' | ''
   })
 
   const resetForm = () => {
@@ -35,7 +38,9 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
       description: '',
       frequency: 'daily',
       deadline: '',
-      priority: 'medium'
+      priority: 'medium',
+      projectId: '',
+      timeSlot: ''
     })
     setShowForm(false)
     setEditingTask(null)
@@ -54,7 +59,9 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
           isActive: true,
           streak: editingTask ? (editingTask as RepeatedTask).streak : 0,
           lastCompleted: editingTask ? (editingTask as RepeatedTask).lastCompleted : undefined,
-          createdAt: editingTask?.createdAt || new Date().toISOString()
+          createdAt: editingTask?.createdAt || new Date().toISOString(),
+          projectId: formData.projectId || undefined,
+          timeSlot: formData.timeSlot || undefined
         }
 
         if (editingTask) {
@@ -75,7 +82,9 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
           priority: formData.priority,
           status: editingTask ? (editingTask as NonRepeatedTask).status : 'pending',
           createdAt: editingTask?.createdAt || new Date().toISOString(),
-          completedAt: editingTask ? (editingTask as NonRepeatedTask).completedAt : undefined
+          completedAt: editingTask ? (editingTask as NonRepeatedTask).completedAt : undefined,
+          projectId: formData.projectId || undefined,
+          timeSlot: formData.timeSlot || undefined
         }
 
         if (editingTask) {
@@ -95,7 +104,9 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
           priority: formData.priority,
           status: editingTask ? (editingTask as RegularTask).status : 'pending',
           createdAt: editingTask?.createdAt || new Date().toISOString(),
-          completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined
+          completedAt: editingTask ? (editingTask as RegularTask).completedAt : undefined,
+          projectId: formData.projectId || undefined,
+          timeSlot: formData.timeSlot || undefined
         }
 
         if (editingTask) {
@@ -350,6 +361,41 @@ export function TaskManager({ type, tasks, onUpdateTasks }: TaskManagerProps) {
                       </SelectContent>
                     </Select>
                   )}
+                </div>
+
+                {/* Project and Time Slot Selection */}
+                <div className="flex items-center gap-2 pt-2">
+                  <Select
+                    value={formData.projectId}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, projectId: value }))}
+                  >
+                    <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
+                      <SelectValue placeholder="Select Project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Project</SelectItem>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={formData.timeSlot}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, timeSlot: value }))}
+                  >
+                    <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
+                      <SelectValue placeholder="Time Slot" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Time Slot</SelectItem>
+                      <SelectItem value="morning">Morning</SelectItem>
+                      <SelectItem value="day">Day</SelectItem>
+                      <SelectItem value="night">Night</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">

@@ -4,6 +4,7 @@ import { NewTodayRoute } from './NewTodayRoute'
 import { NewsFeedRoute } from './NewsFeedRoute'
 import { BooksRoute } from './BooksRoute'
 import { PeopleRoute } from './PeopleRoute'
+import ProjectsRoute from './ProjectsRoute'
 import { IdeasRoute } from './IdeasRoute'
 import { PipelineRoute } from './PipelineRoute'
 import type { AppData } from '@/types'
@@ -23,6 +24,7 @@ export function AppRoutes({ data, setData, user }: AppRoutesProps) {
       <Route path="/newsfeed" element={<NewsFeedRoute data={data} setData={setData} user={user} />} />
       <Route path="/books" element={<BooksRoute />} />
       <Route path="/people" element={<PeopleRoute />} />
+      <Route path="/projects" element={<ProjectsRoute />} />
       <Route path="/ideas" element={<IdeasRoute data={data} setData={setData} />} />
       <Route path="/pipeline" element={<PipelineRoute data={data} setData={setData} />} />
       <Route path="*" element={<Navigate to="/tasks" replace />} />

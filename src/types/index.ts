@@ -35,7 +35,7 @@ export interface RepeatedTask {
   streak: number;
   createdAt: string;
   timeSlot?: 'morning' | 'day' | 'night';
-  project?: string;
+  projectId?: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
 }
 
@@ -49,7 +49,7 @@ export interface NonRepeatedTask {
   createdAt: string;
   completedAt?: string;
   timeSlot?: 'morning' | 'day' | 'night';
-  project?: string;
+  projectId?: string;
 }
 
 export interface RegularTask {
@@ -61,7 +61,7 @@ export interface RegularTask {
   createdAt: string;
   completedAt?: string;
   timeSlot?: 'morning' | 'day' | 'night';
-  project?: string;
+  projectId?: string;
 }
 
 export interface NewsfeedPost {
@@ -149,6 +149,57 @@ export interface PersonConnection {
   createdAt: string;
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'planning' | 'active' | 'on-hold' | 'completed' | 'cancelled';
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  tags: string[];
+  milestones?: ProjectMilestone[];
+  stages?: ProjectStage[];
+  bulkTasks?: ProjectBulkTask[];
+}
+
+export interface ProjectMilestone {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  targetDate?: string;
+  status: 'pending' | 'in-progress' | 'completed' | 'overdue';
+  orderIndex: number;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface ProjectStage {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  color: string;
+  orderIndex: number;
+  isCompleted: boolean;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface ProjectBulkTask {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface AppData {
   ideas: Idea[];
   executionPipelines: ExecutionPipeline[];
@@ -158,6 +209,7 @@ export interface AppData {
   newsfeedPosts: NewsfeedPost[];
   books: Book[]; // Add books to your app data
   people: Person[]; // Add people to your app data
+  projects: Project[]; // Add projects to your app data
 }
 
 export const EXECUTION_STAGES: ExecutionStage[] = [

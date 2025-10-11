@@ -25,6 +25,8 @@ interface TaskListProps {
     frequency: 'daily' | 'weekly' | 'monthly'
     deadline: string
     priority: 'low' | 'medium' | 'high' | 'urgent'
+    projectId: string
+    timeSlot: 'morning' | 'day' | 'night' | ''
   }
   setFormData: (data: any) => void
   handleSubmit: (e: React.FormEvent) => void
@@ -355,6 +357,41 @@ export function TaskList({
                   )}
                 </div>
 
+                {/* Project and Time Slot Selection */}
+                <div className="flex items-center gap-2 pt-2">
+                  <Select
+                    value={formData.projectId}
+                    onValueChange={(value) => setFormData((prev: any) => ({ ...prev, projectId: value }))}
+                  >
+                    <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
+                      <SelectValue placeholder="Select Project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Project</SelectItem>
+                      {data.projects?.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={formData.timeSlot}
+                    onValueChange={(value) => setFormData((prev: any) => ({ ...prev, timeSlot: value }))}
+                  >
+                    <SelectTrigger className="w-auto h-8 text-sm border border-gray-300 focus:border-gray-500">
+                      <SelectValue placeholder="Time Slot" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Time Slot</SelectItem>
+                      <SelectItem value="morning">Morning</SelectItem>
+                      <SelectItem value="day">Day</SelectItem>
+                      <SelectItem value="night">Night</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex justify-end gap-2 pt-2">
                   <Button type="button" variant="outline" size="sm" onClick={resetForm}>
                     Cancel
@@ -447,6 +484,20 @@ export function TaskList({
                           Regular
                         </Badge>
                       </>
+                    )}
+
+                    {/* Project and Time Slot Badges */}
+                    {task.projectId && (
+                      <Badge variant="outline" className="flex items-center gap-1 border-blue-300 text-blue-700">
+                        <Briefcase className="h-3 w-3" />
+                        {data.projects?.find(p => p.id === task.projectId)?.name || 'Project'}
+                      </Badge>
+                    )}
+                    {task.timeSlot && (
+                      <Badge variant="outline" className="flex items-center gap-1 border-purple-300 text-purple-700">
+                        <Clock className="h-3 w-3" />
+                        {task.timeSlot}
+                      </Badge>
                     )}
                   </div>
                 </div>

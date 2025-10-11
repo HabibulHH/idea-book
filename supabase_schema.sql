@@ -427,3 +427,211 @@ CREATE POLICY "Users can delete their own regular tasks" ON public.regular_tasks
 CREATE INDEX IF NOT EXISTS idx_regular_tasks_user_id ON public.regular_tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_regular_tasks_status ON public.regular_tasks(status);
 
+-- Projects schema
+CREATE TABLE IF NOT EXISTS public.projects (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id text NOT NULL,
+    name text NOT NULL,
+    description text,
+    priority text CHECK (priority IN ('low', 'medium', 'high', 'urgent')) NOT NULL DEFAULT 'medium',
+    status text CHECK (status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled')) NOT NULL DEFAULT 'planning',
+    start_date timestamptz,
+    end_date timestamptz,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    tags text[] DEFAULT '{}'
+);
+
+-- Project milestones table
+CREATE TABLE IF NOT EXISTS public.project_milestones (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text,
+    target_date timestamptz,
+    status text CHECK (status IN ('pending', 'in-progress', 'completed', 'overdue')) NOT NULL DEFAULT 'pending',
+    order_index integer NOT NULL DEFAULT 0,
+    created_at timestamptz DEFAULT now(),
+    completed_at timestamptz
+);
+
+-- Project stages table
+CREATE TABLE IF NOT EXISTS public.project_stages (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text,
+    color text DEFAULT '#3B82F6',
+    order_index integer NOT NULL DEFAULT 0,
+    is_completed boolean DEFAULT false,
+    created_at timestamptz DEFAULT now(),
+    completed_at timestamptz
+);
+
+-- Project bulk tasks template table
+CREATE TABLE IF NOT EXISTS public.project_bulk_tasks (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    title text NOT NULL,
+    description text,
+    frequency text CHECK (frequency IN ('daily', 'weekly', 'monthly')) NOT NULL,
+    priority text CHECK (priority IN ('low', 'medium', 'high', 'urgent')) NOT NULL DEFAULT 'medium',
+    is_active boolean DEFAULT true,
+    created_at timestamptz DEFAULT now()
+);
+
+-- Update existing task tables to support project binding
+ALTER TABLE public.repeated_tasks ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES public.projects(id) ON DELETE SET NULL;
+ALTER TABLE public.non_repeated_tasks ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES public.projects(id) ON DELETE SET NULL;
+ALTER TABLE public.regular_tasks ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES public.projects(id) ON DELETE SET NULL;
+
+-- Enable RLS for project tables
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_stages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_bulk_tasks ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for projects
+CREATE POLICY "Users can view their own projects" ON public.projects
+    FOR SELECT USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can insert their own projects" ON public.projects
+    FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can update their own projects" ON public.projects
+    FOR UPDATE USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can delete their own projects" ON public.projects
+    FOR DELETE USING (auth.uid()::text = user_id);
+
+-- Create RLS policies for project_milestones
+CREATE POLICY "Users can view milestones for their projects" ON public.project_milestones
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_milestones.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can insert milestones for their projects" ON public.project_milestones
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_milestones.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can update milestones for their projects" ON public.project_milestones
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_milestones.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can delete milestones for their projects" ON public.project_milestones
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_milestones.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+-- Create RLS policies for project_stages
+CREATE POLICY "Users can view stages for their projects" ON public.project_stages
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_stages.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can insert stages for their projects" ON public.project_stages
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_stages.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can update stages for their projects" ON public.project_stages
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_stages.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can delete stages for their projects" ON public.project_stages
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_stages.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+-- Create RLS policies for project_bulk_tasks
+CREATE POLICY "Users can view bulk tasks for their projects" ON public.project_bulk_tasks
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_bulk_tasks.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can insert bulk tasks for their projects" ON public.project_bulk_tasks
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_bulk_tasks.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can update bulk tasks for their projects" ON public.project_bulk_tasks
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_bulk_tasks.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+CREATE POLICY "Users can delete bulk tasks for their projects" ON public.project_bulk_tasks
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM public.projects 
+            WHERE projects.id = project_bulk_tasks.project_id 
+            AND projects.user_id = auth.uid()::text
+        )
+    );
+
+-- Create indexes for project tables
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_projects_status ON public.projects(status);
+CREATE INDEX IF NOT EXISTS idx_projects_priority ON public.projects(priority);
+CREATE INDEX IF NOT EXISTS idx_project_milestones_project_id ON public.project_milestones(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_milestones_status ON public.project_milestones(status);
+CREATE INDEX IF NOT EXISTS idx_project_stages_project_id ON public.project_stages(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_bulk_tasks_project_id ON public.project_bulk_tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_bulk_tasks_frequency ON public.project_bulk_tasks(frequency);
+
+-- Create indexes for project_id columns in task tables
+CREATE INDEX IF NOT EXISTS idx_repeated_tasks_project_id ON public.repeated_tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_non_repeated_tasks_project_id ON public.non_repeated_tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_regular_tasks_project_id ON public.regular_tasks(project_id);
+
+-- Create indexes for time_slot columns in task tables
+CREATE INDEX IF NOT EXISTS idx_repeated_tasks_time_slot ON public.repeated_tasks(time_slot);
+CREATE INDEX IF NOT EXISTS idx_non_repeated_tasks_time_slot ON public.non_repeated_tasks(time_slot);
+CREATE INDEX IF NOT EXISTS idx_regular_tasks_time_slot ON public.regular_tasks(time_slot);
+
