@@ -159,9 +159,9 @@ export const Books: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full max-h-full">
+    <div className="flex flex-col h-full max-h-full fade-in">
       {/* Sticky Header */}
-      <div className="flex-shrink-0 mb-6">
+      <div className="flex-shrink-0 mb-6 slide-in-up">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">My Books</h1>
@@ -169,22 +169,22 @@ export const Books: React.FC = () => {
           </div>
           <Button 
             onClick={() => setShowAddModal(true)} 
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 hover-bounce"
           >
             Add Book
           </Button>
         </div>
         
         {/* Search and Filter */}
-        <div className="flex gap-4 mt-4">
+        <div className="flex gap-4 mt-4 fade-in-delay-1">
           <Input
             placeholder="Search books..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-md"
+            className="max-w-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] transition-all duration-200 hover:border-blue-400">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
@@ -202,12 +202,13 @@ export const Books: React.FC = () => {
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto scrollbar-hide min-h-0">
           {/* Books List - Goodreads Style */}
-          <div className="p-6">
+          <div className="p-6 fade-in">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-          {filteredBooks.map((book) => (
+          {filteredBooks.map((book, index) => (
             <div 
               key={book.id} 
-              className="cursor-pointer group"
+              className="cursor-pointer group hover-lift transition-all duration-200 fade-in"
+              style={{ animationDelay: `${index * 0.05}s` }}
               onClick={() => {
                 setSelectedBook(book)
                 setShowMobileModal(true)
@@ -219,11 +220,11 @@ export const Books: React.FC = () => {
                   <img
                     src={book.coverImageUrl}
                     alt={book.title}
-                    className="max-w-full h-48 object-contain rounded shadow-md group-hover:shadow-lg transition-shadow"
+                    className="max-w-full h-48 object-contain rounded shadow-md group-hover:shadow-lg transition-all duration-200 group-hover:scale-105"
                   />
                 ) : (
                   <div 
-                    className="w-32 h-48 bg-gray-200 rounded shadow-md flex items-center justify-center"
+                    className="w-32 h-48 bg-gray-200 rounded shadow-md flex items-center justify-center transition-all duration-200 group-hover:scale-105"
                   >
                     <span className="text-gray-500 text-xs text-center px-2">No Cover</span>
                   </div>
@@ -249,7 +250,7 @@ export const Books: React.FC = () => {
                       {[...Array(5)].map((_, i) => (
                         <span
                           key={i}
-                          className={`text-xs ${
+                          className={`text-xs transition-all duration-200 ${
                             i < book.rating! ? 'text-yellow-400' : 'text-gray-300'
                           }`}
                         >
@@ -263,7 +264,7 @@ export const Books: React.FC = () => {
                 
                 {/* Status Badge */}
                 <div className="pt-1 flex justify-center">
-                  <Badge className={`${getStatusColor(book.status)} text-xs px-2 py-1`}>
+                  <Badge className={`${getStatusColor(book.status)} text-xs px-2 py-1 transition-all duration-200 hover:scale-105`}>
                     {book.status.replace('-', ' ')}
                   </Badge>
                 </div>
@@ -273,7 +274,7 @@ export const Books: React.FC = () => {
         </div>
 
         {filteredBooks.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 fade-in">
             <div className="text-gray-500 text-lg">No books found</div>
             <p className="text-gray-400 mt-2">
               {searchTerm || statusFilter !== 'all' 
@@ -288,7 +289,7 @@ export const Books: React.FC = () => {
       {/* Add Book Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto scale-in hover-lift transition-all duration-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Add New Book</h2>
@@ -400,7 +401,7 @@ export const Books: React.FC = () => {
               <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
                 <Button 
                   onClick={handleAddBook}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 hover-bounce"
                   disabled={!newBook.title || !newBook.author}
                 >
                   Add Book
@@ -412,6 +413,7 @@ export const Books: React.FC = () => {
                     setNewBook({ title: '', author: '', description: '', status: 'to-read', tags: [] })
                     setSelectedImage(null)
                   }}
+                  className="hover-bounce"
                 >
                   Cancel
                 </Button>
@@ -424,7 +426,7 @@ export const Books: React.FC = () => {
       {/* Book Details Modal */}
       {showMobileModal && selectedBook && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end lg:items-center lg:justify-center">
-          <div className="bg-white w-full lg:w-auto lg:max-w-2xl max-h-[90vh] rounded-t-lg lg:rounded-lg overflow-hidden">
+          <div className="bg-white w-full lg:w-auto lg:max-w-2xl max-h-[90vh] rounded-t-lg lg:rounded-lg overflow-hidden scale-in hover-lift transition-all duration-200">
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-lg font-semibold">Book Details</h2>
               <Button

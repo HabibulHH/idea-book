@@ -152,17 +152,17 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
   const activeDays = activityData.filter(a => a.completedTasks > 0).length
 
   return (
-    <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-600 to-slate-500 p-6 text-white shadow-lg">
+    <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-600 to-slate-500 p-6 text-white shadow-lg hover-lift transition-all duration-300 fade-in">
       {/* Background decorative elements */}
-      <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-white/10"></div>
-      <div className="absolute -bottom-2 -left-2 h-12 w-12 rounded-full bg-white/5"></div>
+      <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-white/10 transition-transform duration-300 hover:scale-110"></div>
+      <div className="absolute -bottom-2 -left-2 h-12 w-12 rounded-full bg-white/5 transition-transform duration-300 hover:scale-110"></div>
       
       <div className="relative z-10">
         {/* Header Section */}
-        <div className="mb-6">
+        <div className="mb-6 slide-in-up">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Activity className="h-6 w-6 text-white" />
+              <Activity className="h-6 w-6 text-white transition-transform duration-200 hover:scale-110" />
               <h2 className="text-xl font-bold text-white">
                 Activity Dashboard
               </h2>
@@ -192,9 +192,9 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
         {/* Main Content Grid */}
         <div className="grid grid-cols-2 gap-8">
           {/* Left Section - Activity Stats */}
-          <div className="space-y-4">
-            <div>
-              <div className="text-3xl font-bold text-white">
+          <div className="space-y-4 slide-in-left">
+            <div className="fade-in-delay-1">
+              <div className="text-3xl font-bold text-white transition-all duration-300 hover:scale-110">
                 {completedToday}
               </div>
               <div className="text-sm text-white/80">
@@ -202,8 +202,8 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div>
+            <div className="flex items-center space-x-4 fade-in-delay-2">
+              <div className="transition-all duration-300 hover:scale-105">
                 <div className="text-lg font-semibold text-white">
                   {totalTasks}
                 </div>
@@ -211,7 +211,7 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
                   Total Tasks
                 </div>
               </div>
-              <div>
+              <div className="transition-all duration-300 hover:scale-105">
                 <div className="text-lg font-semibold text-white">
                   {activeDays}
                 </div>
@@ -223,9 +223,9 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
           </div>
 
           {/* Right Section - Activity Calendar */}
-          <div className="space-y-3">
+          <div className="space-y-3 slide-in-right">
             {/* Month Navigation */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between fade-in-delay-1">
               <button
                 onClick={() => {
                   if (currentMonth === 0) {
@@ -235,7 +235,7 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
                     setCurrentMonth(currentMonth - 1)
                   }
                 }}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
+                className="p-1 hover:bg-white/20 rounded transition-all duration-200 hover:scale-110"
               >
                 ←
               </button>
@@ -253,14 +253,14 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
                     setCurrentMonth(currentMonth + 1)
                   }
                 }}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
+                className="p-1 hover:bg-white/20 rounded transition-all duration-200 hover:scale-110"
               >
                 →
               </button>
             </div>
 
             {/* Activity Grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-1 fade-in-delay-2">
               {(() => {
                 const firstDay = new Date(currentYear, currentMonth, 1)
                 const lastDay = new Date(currentYear, currentMonth + 1, 0)
@@ -286,7 +286,7 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
                     <button
                       key={dateString}
                       onClick={() => setSelectedDate(dateString)}
-                      className={`w-2 h-2 rounded-sm transition-all duration-200 hover:scale-125 ${
+                      className={`w-2 h-2 rounded-sm transition-all duration-200 hover:scale-125 hover:shadow-lg ${
                         activity?.level === 0 ? 'bg-white/20' :
                         activity?.level === 1 ? 'bg-white/40' :
                         activity?.level === 2 ? 'bg-white/60' :
@@ -295,6 +295,7 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
                       } ${
                         selectedDate === dateString ? 'ring-1 ring-white' : ''
                       }`}
+                      style={{ animationDelay: `${day * 0.01}s` }}
                       title={`${formatDate(dateString)}: ${activity?.completedTasks || 0}/${activity?.totalTasks || 0} tasks completed`}
                     />
                   )
@@ -308,23 +309,23 @@ export function ActivityDashboard({ data }: ActivityDashboardProps) {
 
         {/* Selected Day Details */}
         {selectedDate && (
-          <div className="mt-6 p-4 bg-white/10 rounded-lg backdrop-blur-sm">
+          <div className="mt-6 p-4 bg-white/10 rounded-lg backdrop-blur-sm scale-in hover-lift transition-all duration-200">
             <div className="flex items-center space-x-3 mb-3">
-              <Calendar className="h-4 w-4 text-white" />
+              <Calendar className="h-4 w-4 text-white transition-transform duration-200 hover:scale-110" />
               <h3 className="text-sm font-medium text-white">
                 {formatDate(selectedDate)}
               </h3>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-4 w-4 text-white" />
+            <div className="grid grid-cols-2 gap-4 fade-in-delay-1">
+              <div className="flex items-center space-x-2 transition-all duration-200 hover:scale-105">
+                <CheckCircle className="h-4 w-4 text-white transition-transform duration-200 hover:scale-110" />
                 <span className="text-sm text-white/80">
                   Completed: {selectedDayTasks.completed}
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Target className="h-4 w-4 text-white" />
+              <div className="flex items-center space-x-2 transition-all duration-200 hover:scale-105">
+                <Target className="h-4 w-4 text-white transition-transform duration-200 hover:scale-110" />
                 <span className="text-sm text-white/80">
                   Pending: {selectedDayTasks.pending}
                 </span>

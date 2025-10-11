@@ -152,11 +152,11 @@ export function NewTodayView({ data }: NewTodayViewProps) {
 
 
   return (
-    <div className=" space-y-6">
+    <div className="space-y-6 fade-in">
 
       {/* Activity Dashboard and Empty Space - Two Columns */}
       <div className="grid grid-cols-2 gap-6">
-        <div className="col-span-1">
+        <div className="col-span-1 slide-in-left">
           <TimeSlotSelector
             data={data}
             selectedTimeSlot={selectedTimeSlot}
@@ -165,7 +165,7 @@ export function NewTodayView({ data }: NewTodayViewProps) {
             filteredTasks={filteredTasks}
           />
         </div>
-        <div className="col-span-1">
+        <div className="col-span-1 slide-in-right">
           {/* Empty space for future content */}
           <ActivityDashboard data={data} />
         </div>
@@ -173,17 +173,17 @@ export function NewTodayView({ data }: NewTodayViewProps) {
 
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 overflow-y-auto max-h-screen">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 overflow-y-auto max-h-screen slide-in-up">
        
 
         {/* Task Lists */}
         <div className="lg:col-span-3 space-y-6">
           {selectedTimeSlot === 'all' ? (
             // Show all time slots
-            Object.entries(TIME_SLOTS).map(([slotKey, slotConfig]) => (
-              <div key={slotKey} className="space-y-3">
+            Object.entries(TIME_SLOTS).map(([slotKey, slotConfig], index) => (
+              <div key={slotKey} className="space-y-3 fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
+                  <Clock className="h-4 w-4 text-gray-500 transition-transform duration-200 hover:scale-110" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {slotConfig.label}
                   </h3>
@@ -193,8 +193,8 @@ export function NewTodayView({ data }: NewTodayViewProps) {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {tasksByTimeSlot[slotKey as keyof typeof tasksByTimeSlot].map((task) => (
-                    <div key={task.id} className={`p-3 rounded-lg border ${slotConfig.color}`}>
+                  {tasksByTimeSlot[slotKey as keyof typeof tasksByTimeSlot].map((task, taskIndex) => (
+                    <div key={task.id} className={`p-3 rounded-lg border ${slotConfig.color} hover-lift transition-all duration-200 fade-in`} style={{ animationDelay: `${(index * 0.1) + (taskIndex * 0.05)}s` }}>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h4 className="font-medium text-gray-900 dark:text-white">{task.title}</h4>
@@ -227,9 +227,9 @@ export function NewTodayView({ data }: NewTodayViewProps) {
             ))
           ) : (
             // Show selected time slot only
-            <div className="space-y-3">
+            <div className="space-y-3 fade-in">
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-gray-500" />
+                <Clock className="h-4 w-4 text-gray-500 transition-transform duration-200 hover:scale-110" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {TIME_SLOTS[selectedTimeSlot as keyof typeof TIME_SLOTS]?.label}
                 </h3>
@@ -239,8 +239,8 @@ export function NewTodayView({ data }: NewTodayViewProps) {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {filteredTasks.map((task) => (
-                  <div key={task.id} className={`p-3 rounded-lg border ${TIME_SLOTS[task.timeSlot].color}`}>
+                {filteredTasks.map((task, taskIndex) => (
+                  <div key={task.id} className={`p-3 rounded-lg border ${TIME_SLOTS[task.timeSlot].color} hover-lift transition-all duration-200 fade-in`} style={{ animationDelay: `${taskIndex * 0.05}s` }}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 dark:text-white">{task.title}</h4>
@@ -276,7 +276,7 @@ export function NewTodayView({ data }: NewTodayViewProps) {
 
       {/* Create Task Form */}
       {showCreateForm && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 scale-in hover-lift transition-all duration-200">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Create New Task
           </h3>
@@ -344,10 +344,10 @@ export function NewTodayView({ data }: NewTodayViewProps) {
             />
           </div>
           <div className="flex justify-end space-x-3 mt-6">
-            <Button variant="outline" onClick={() => setShowCreateForm(false)}>
+            <Button variant="outline" onClick={() => setShowCreateForm(false)} className="hover-bounce">
               Cancel
             </Button>
-            <Button>
+            <Button className="hover-bounce">
               Create Task
             </Button>
           </div>

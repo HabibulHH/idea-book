@@ -226,9 +226,9 @@ export function NewsFeed({ user }: NewsFeedProps) {
   }
 
   return (
-    <div className="flex flex-col h-full max-h-full">
+    <div className="flex flex-col h-full max-h-full fade-in">
       {/* Sticky Header */}
-      <div className="flex-shrink-0 mb-6">
+      <div className="flex-shrink-0 mb-6 slide-in-up">
 
 
         {/* Search Bar and Buttons in One Row */}
@@ -241,12 +241,12 @@ export function NewsFeed({ user }: NewsFeedProps) {
           </div>
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-transform duration-200 hover:scale-110" />
             <Input
               placeholder="Search posts..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 bg-white text-gray-900 border-gray-300"
+              className="pl-10 bg-white text-gray-900 border-gray-300 transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 

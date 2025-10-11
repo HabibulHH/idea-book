@@ -274,12 +274,12 @@ export default function People() {
   }
 
   const renderPersonCard = (person: Person) => (
-    <Card key={person.id} className="p-6 hover:shadow-lg transition-shadow bg-white border border-gray-200 min-h-[240px] w-full">
+    <Card key={person.id} className="p-6 hover:shadow-lg transition-all duration-200 bg-white border border-gray-200 min-h-[240px] w-full hover-lift fade-in">
       {/* Header Section */}
       <div className="flex items-start justify-between mb-5">
         <div className="flex items-start gap-4 flex-1 min-w-0">
           {/* Profile Picture */}
-          <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-xl flex-shrink-0">
+          <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-xl flex-shrink-0 transition-transform duration-200 hover:scale-110">
             {person.name.charAt(0).toUpperCase()}
           </div>
           
@@ -304,17 +304,17 @@ export default function People() {
             onClick={() => openEditModal(person)}
             variant="ghost"
             size="sm"
-            className="p-2 text-gray-600 hover:text-gray-800"
+            className="p-2 text-gray-600 hover:text-gray-800 hover-bounce"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-4 w-4 transition-transform duration-200 hover:scale-110" />
           </Button>
           <Button
             onClick={() => handleDeletePerson(person.id)}
             variant="ghost"
             size="sm"
-            className="p-2 text-red-500 hover:text-red-700"
+            className="p-2 text-red-500 hover:text-red-700 hover-bounce"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4 transition-transform duration-200 hover:scale-110" />
           </Button>
         </div>
       </div>
@@ -326,7 +326,7 @@ export default function People() {
       <div className="space-y-4 mb-5">
         {person.mobile && (
           <div className="flex items-center gap-4 text-base text-gray-600">
-            <Phone className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <Phone className="h-5 w-5 text-gray-500 flex-shrink-0 transition-transform duration-200 hover:scale-110" />
             <a href={`tel:${person.mobile}`} className="hover:text-green-600 transition-colors font-medium">
               {person.mobile}
             </a>
@@ -334,7 +334,7 @@ export default function People() {
         )}
         {person.email && (
           <div className="flex items-center gap-4 text-base text-gray-600">
-            <Mail className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <Mail className="h-5 w-5 text-gray-500 flex-shrink-0 transition-transform duration-200 hover:scale-110" />
             <a href={`mailto:${person.email}`} className="hover:text-green-600 transition-colors font-medium">
               {person.email}
             </a>
@@ -344,7 +344,7 @@ export default function People() {
         {/* Partnership/Relationship Status */}
         {person.connections && person.connections.length > 0 && (
           <div className="flex items-center gap-4 text-base text-gray-600">
-            <Users className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <Users className="h-5 w-5 text-gray-500 flex-shrink-0 transition-transform duration-200 hover:scale-110" />
             <span className="font-medium">Partnership</span>
           </div>
         )}
@@ -355,12 +355,12 @@ export default function People() {
         <div className="mb-5">
           <div className="flex flex-wrap gap-3">
             {person.skills.slice(0, 4).map((skill, index) => (
-              <Badge key={index} variant="secondary" className="text-sm bg-green-50 text-green-700 border-green-200 px-3 py-1">
+              <Badge key={index} variant="secondary" className="text-sm bg-green-50 text-green-700 border-green-200 px-3 py-1 transition-all duration-200 hover:scale-105">
                 {skill.skillName}
               </Badge>
             ))}
             {person.skills.length > 4 && (
-              <Badge variant="outline" className="text-sm text-gray-600 border-gray-300 px-3 py-1">
+              <Badge variant="outline" className="text-sm text-gray-600 border-gray-300 px-3 py-1 transition-all duration-200 hover:scale-105">
                 +{person.skills.length - 4} more
               </Badge>
             )}
@@ -374,7 +374,7 @@ export default function People() {
           <div className="flex items-center gap-1">
             {renderStars(person.helpfulnessRating)}
           </div>
-          <span className="text-base text-gray-600 font-medium">
+          <span className="text-base text-gray-600 font-medium transition-all duration-200 hover:scale-105">
             ({person.helpfulnessRating}/5)
           </span>
         </div>
@@ -391,9 +391,9 @@ export default function People() {
   }
 
   return (
-    <div className="flex flex-col h-full max-h-full">
+    <div className="flex flex-col h-full max-h-full fade-in">
       {/* Sticky Header */}
-      <div className="flex-shrink-0 mb-6">
+      <div className="flex-shrink-0 mb-6 slide-in-up">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">People Directory</h1>
@@ -405,16 +405,16 @@ export default function People() {
             <Button
               onClick={() => setShowConnectionModal(true)}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover-bounce"
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-4 w-4 transition-transform duration-200 hover:scale-110" />
               Add Connection
             </Button>
             <Button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover-bounce"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 transition-transform duration-200 hover:scale-110" />
               Add Person
             </Button>
           </div>
@@ -426,15 +426,15 @@ export default function People() {
         <div className="h-full overflow-y-auto scrollbar-hide min-h-0">
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 fade-in-delay-1">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-transform duration-200 hover:scale-110" />
             <Input
               placeholder="Search people by name, notes, or skills..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
         </div>
@@ -482,8 +482,9 @@ export default function People() {
               }}
               variant="outline"
               size="sm"
+              className="hover-bounce"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4 transition-transform duration-200 hover:scale-110" />
             </Button>
           )}
         </div>
@@ -491,15 +492,15 @@ export default function People() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4 fade-in">
           <p className="text-red-800">{error}</p>
         </div>
       )}
 
       {/* People Grid */}
       {filteredPeople.length === 0 ? (
-        <div className="text-center py-12">
-          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <div className="text-center py-12 fade-in">
+          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4 transition-transform duration-200 hover:scale-110" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No people found
           </h3>
@@ -509,21 +510,25 @@ export default function People() {
               : 'Start by adding your first contact'
             }
           </p>
-          <Button onClick={() => setShowAddModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button onClick={() => setShowAddModal(true)} className="hover-bounce">
+            <Plus className="h-4 w-4 mr-2 transition-transform duration-200 hover:scale-110" />
             Add Person
           </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
-          {filteredPeople.map(renderPersonCard)}
+          {filteredPeople.map((person, index) => (
+            <div key={person.id} style={{ animationDelay: `${index * 0.1}s` }}>
+              {renderPersonCard(person)}
+            </div>
+          ))}
         </div>
       )}
 
       {/* Add Person Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto scale-in hover-lift transition-all duration-200">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">
@@ -752,14 +757,16 @@ export default function People() {
                 <Button
                   onClick={() => setShowAddModal(false)}
                   variant="outline"
+                  className="hover-bounce"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleAddPerson}
                   disabled={!formData.name.trim()}
+                  className="hover-bounce"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 mr-2 transition-transform duration-200 hover:scale-110" />
                   Add Person
                 </Button>
               </div>
@@ -771,7 +778,7 @@ export default function People() {
       {/* Edit Person Modal */}
       {showEditModal && editingPerson && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto scale-in hover-lift transition-all duration-200">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">
@@ -1001,14 +1008,16 @@ export default function People() {
                 <Button
                   onClick={() => setShowEditModal(false)}
                   variant="outline"
+                  className="hover-bounce"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleUpdatePerson}
                   disabled={!formData.name.trim()}
+                  className="hover-bounce"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 mr-2 transition-transform duration-200 hover:scale-110" />
                   Update Person
                 </Button>
               </div>
@@ -1020,7 +1029,7 @@ export default function People() {
       {/* Connection Modal */}
       {showConnectionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
+          <div className="bg-white rounded-lg max-w-md w-full scale-in hover-lift transition-all duration-200">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">
@@ -1092,14 +1101,16 @@ export default function People() {
                 <Button
                   onClick={() => setShowConnectionModal(false)}
                   variant="outline"
+                  className="hover-bounce"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleCreateConnection}
                   disabled={!connectionData.personAId || !connectionData.personBId || connectionData.personAId === connectionData.personBId}
+                  className="hover-bounce"
                 >
-                  <UserPlus className="h-4 w-4 mr-2" />
+                  <UserPlus className="h-4 w-4 mr-2 transition-transform duration-200 hover:scale-110" />
                   Create Connection
                 </Button>
               </div>

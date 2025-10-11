@@ -194,14 +194,14 @@ export function Tasks({ data, setData }: TasksProps) {
   }
 
   return (
-    <div className="flex flex-col h-full max-h-full">
+    <div className="flex flex-col h-full max-h-full fade-in">
       {/* Weather Header with DateTime */}
-      <div className="flex-shrink-0 mb-6">
+      <div className="flex-shrink-0 mb-6 slide-in-up">
         <WeatherHeader />
       </div>
 
       {/* Task Summary and Controls */}
-      <div className="flex-shrink-0 space-y-4 pb-6">
+      <div className="flex-shrink-0 space-y-4 pb-6 slide-in-up">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Today</h2>

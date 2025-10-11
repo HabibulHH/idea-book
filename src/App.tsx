@@ -266,23 +266,24 @@ function App() {
         fixed top-0 left-0 z-50 transform transition-all duration-300 ease-in-out
         ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         ${isLeftSidebarCollapsed ? 'lg:w-24' : 'lg:w-64'}
+        slide-in-left
       `}>
         <div className="p-6 flex-1">
           {/* Branding Section */}
-          <div className="mb-6">
+          <div className="mb-6 fade-in">
             {isLeftSidebarCollapsed ? (
               <div className="flex flex-col items-center gap-3">
                 <img 
                   src="/favicon.ico" 
                   alt="Self Manager" 
-                  className="w-8 h-8"
+                  className="w-8 h-8 hover-scale transition-smooth"
                 />
                 {/* Expand Button - Show when collapsed */}
                 <Button
                   onClick={toggleLeftSidebar}
                   variant="ghost"
                   size="sm"
-                  className="p-2 h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                  className="p-2 h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full hover-bounce"
                 >
                   <AlignJustify className="h-4 w-4" />
                 </Button>
@@ -293,7 +294,7 @@ function App() {
                   <img 
                     src="/favicon.ico" 
                     alt="Self Manager" 
-                    className="w-8 h-8"
+                    className="w-8 h-8 hover-scale transition-smooth"
                   />
                   <div>
                     <h1 className="text-xl font-bold text-gray-900 mb-1">
@@ -309,7 +310,7 @@ function App() {
                   onClick={toggleLeftSidebar}
                   variant="ghost"
                   size="sm"
-                  className="absolute top-0 right-0 p-2 h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                  className="absolute top-0 right-0 p-2 h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full hover-bounce"
                 >
                   <AlignJustify className="h-4 w-4" />
                 </Button>
@@ -319,22 +320,22 @@ function App() {
 
           {/* Navigation */}
           <nav className="space-y-2">
-            {navigationItems.map((item) => {
+            {navigationItems.map((item, index) => {
               const Icon = item.icon
               return (
                 <button
                   key={item.id}
                   onClick={() => handleNavigation(item.path)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-200 ease-in-out hover-lift ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-200 ease-in-out hover-lift hover-scale ${
                     getCurrentSection() === item.id
                       ? 'bg-green-50 text-green-700 border border-green-200 shadow-sm'
                       : 'text-gray-700 hover:bg-gray-100'
                   } ${
                     isLeftSidebarCollapsed ? 'justify-center px-2 py-3' : ''
-                  }`}
+                  } fade-in-delay-${Math.min(index + 1, 3)}`}
                   title={isLeftSidebarCollapsed ? item.label : undefined}
                 >
-                  <Icon className={`h-5 w-5 ${isLeftSidebarCollapsed ? 'mx-auto' : ''}`} />
+                  <Icon className={`h-5 w-5 transition-transform duration-200 hover:scale-110 ${isLeftSidebarCollapsed ? 'mx-auto' : ''}`} />
                   {!isLeftSidebarCollapsed && (
                     <span className="font-medium">{item.label}</span>
                   )}
@@ -345,17 +346,17 @@ function App() {
         </div>
 
         {/* Profile Section - Bottom Left */}
-        <div className="p-6 border-t border-gray-200 bg-white">
+        <div className="p-6 border-t border-gray-200 bg-white slide-in-up">
           {isLeftSidebarCollapsed ? (
             <div className="flex justify-center">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center hover-scale transition-smooth">
                 <User className="h-4 w-4 text-green-600" />
               </div>
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="flex items-center gap-3 mb-3 fade-in">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center hover-scale transition-smooth">
                   <User className="h-4 w-4 text-green-600" />
                 </div>
                 <div className="flex-1">
@@ -371,16 +372,16 @@ function App() {
                 onClick={toggleTheme}
                 variant="outline"
                 size="sm"
-                className="w-full mb-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                className="w-full mb-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover-bounce"
               >
                 {isDarkMode ? (
                   <>
-                    <Sun className="h-4 w-4 mr-2" />
+                    <Sun className="h-4 w-4 mr-2 transition-transform duration-200 hover:rotate-180" />
                     Light Mode
                   </>
                 ) : (
                   <>
-                    <Moon className="h-4 w-4 mr-2" />
+                    <Moon className="h-4 w-4 mr-2 transition-transform duration-200 hover:rotate-12" />
                     Dark Mode
                   </>
                 )}
@@ -391,9 +392,9 @@ function App() {
                 onClick={() => setShowConfigModal(true)}
                 variant="outline"
                 size="sm"
-                className="w-full mb-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                className="w-full mb-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover-bounce"
               >
-                <Settings className="h-4 w-4 mr-2" />
+                <Settings className="h-4 w-4 mr-2 transition-transform duration-200 hover:rotate-90" />
                 Configuration
               </Button>
               
@@ -401,7 +402,7 @@ function App() {
                 onClick={handleLogout}
                 variant="outline"
                 size="sm"
-                className="w-full text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                className="w-full text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover-bounce"
               >
                 Logout
               </Button>
@@ -415,7 +416,7 @@ function App() {
         isLeftSidebarCollapsed ? 'lg:ml-24' : 'lg:ml-0'
       } ${!isRightSidebarCollapsed ? 'lg:mr-80' : ''}`}>
         <div className="h-full p-4 lg:p-8 pt-16 lg:pt-8">
-          <div className="h-full transition-all duration-300 ease-in-out">
+          <div className="h-full transition-all duration-300 ease-in-out fade-in">
             <AppRoutes data={appData} setData={setAppData} user={user} />
           </div>
         </div>
@@ -424,12 +425,12 @@ function App() {
       {/* Right Sidebar Toggle Button */}
       <button
         onClick={() => setIsRightSidebarCollapsed(!isRightSidebarCollapsed)}
-        className="fixed top-4 right-4 z-40 lg:block hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+        className="fixed top-4 right-4 z-40 lg:block hidden p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-all duration-200 hover-scale hover-bounce"
       >
         {isRightSidebarCollapsed ? (
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 transition-transform duration-200 hover:scale-110" />
         ) : (
-          <Menu className="h-4 w-4" />
+          <Menu className="h-4 w-4 transition-transform duration-200 hover:scale-110" />
         )}
       </button>
 
@@ -438,28 +439,28 @@ function App() {
         w-80 bg-gray-50 border-l border-gray-200 shadow-sm flex flex-col h-screen
         fixed top-0 right-0 z-30 transform transition-transform duration-300 ease-in-out
         ${isRightSidebarCollapsed ? 'translate-x-full' : 'translate-x-0'}
-        lg:block hidden
+        lg:block hidden slide-in-right
       `}>
         <div className="flex flex-col h-full">
           {/* Task Count Summary - Sticky */}
-          <div className="flex-shrink-0 p-6 pb-4">
+          <div className="flex-shrink-0 p-6 pb-4 fade-in">
             <h2 className="text-lg font-bold text-gray-900 mb-3">
               Task Overview
             </h2>
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-gradient-to-br from-yellow-400 via-orange-300 to-yellow-200 p-3 rounded-lg border border-yellow-300 text-center">
+              <div className="bg-gradient-to-br from-yellow-400 via-orange-300 to-yellow-200 p-3 rounded-lg border border-yellow-300 text-center hover-scale transition-smooth fade-in-delay-1">
                 <p className="text-xs font-medium text-yellow-900">Daily</p>
                 <p className="text-lg font-bold text-yellow-800">
                   {appData.repeatedTasks.filter(task => task.isActive).length}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-3 rounded-lg border border-blue-300 text-center">
+              <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-3 rounded-lg border border-blue-300 text-center hover-scale transition-smooth fade-in-delay-2">
                 <p className="text-xs font-medium text-blue-900">Office</p>
                 <p className="text-lg font-bold text-blue-800">
                   {appData.nonRepeatedTasks.filter(task => task.status !== 'completed').length}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-gray-400 via-gray-300 to-gray-200 p-3 rounded-lg border border-gray-300 text-center">
+              <div className="bg-gradient-to-br from-gray-400 via-gray-300 to-gray-200 p-3 rounded-lg border border-gray-300 text-center hover-scale transition-smooth fade-in-delay-3">
                 <p className="text-xs font-medium text-gray-900">Regular</p>
                 <p className="text-lg font-bold text-gray-800">
                   {(appData.regularTasks || []).filter(task => task.status !== 'completed').length}

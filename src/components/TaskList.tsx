@@ -219,16 +219,16 @@ export function TaskList({
   }
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-hide min-h-0">
+    <div className="h-full overflow-y-auto scrollbar-hide min-h-0 fade-in">
       <div className="grid gap-4">
         {/* Quick Add Task Input */}
         {!showForm && !editingTask && (
           <div
-            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 cursor-text"
+            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 cursor-text transition-all duration-200 hover-lift hover-scale"
             onClick={() => setShowForm(true)}
           >
-            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
-            <span className="text-gray-500">Add a task</span>
+            <div className="w-5 h-5 border-2 border-gray-300 rounded-full transition-all duration-200 hover:border-green-500"></div>
+            <span className="text-gray-500 transition-colors duration-200 hover:text-gray-700">Add a task</span>
           </div>
         )}
 
@@ -393,10 +393,10 @@ export function TaskList({
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button type="button" variant="outline" size="sm" onClick={resetForm}>
+                  <Button type="button" variant="outline" size="sm" onClick={resetForm} className="hover-bounce">
                     Cancel
                   </Button>
-                  <Button type="submit" size="sm" disabled={!formData.title.trim()}>
+                  <Button type="submit" size="sm" disabled={!formData.title.trim()} className="hover-bounce">
                     {editingTask ? 'Update' : 'Add task'}
                   </Button>
                 </div>
@@ -407,7 +407,7 @@ export function TaskList({
 
         {/* Today's Tasks */}
         {sortedTasks.map((task) => (
-          <Card key={task.id} className="bg-white border-gray-200 shadow-sm">
+          <Card key={task.id} className="bg-white border-gray-200 shadow-sm hover-lift transition-all duration-200 fade-in">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -543,9 +543,9 @@ export function TaskList({
         ))}
 
         {sortedTasks.length === 0 && (
-          <Card className="bg-white border-gray-200">
+          <Card className="bg-white border-gray-200 hover-lift transition-all duration-200 fade-in">
             <CardContent className="p-8 text-center">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400 transition-transform duration-200 hover:scale-110" />
               <p className="text-gray-500 mb-2">No tasks for today</p>
               <p className="text-sm text-gray-400">Add your first task to get started!</p>
             </CardContent>
