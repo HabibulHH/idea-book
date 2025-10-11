@@ -1,28 +1,24 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
-import IdeaParkingLot from '@/components/IdeaParkingLot'
-import ExecutionPipeline from '@/components/ExecutionPipeline'
-import { Tasks } from '@/components/Tasks'
-import { NewTodayView } from '@/components/NewTodayView'
-import { NewsFeed } from '@/components/NewsFeed'
-import { Books } from '@/components/Books'
-import People from '@/components/People'
 import { Login } from '@/components/Login'
 import { ConfigModal } from '@/components/ConfigModal'
 import { ChatInterface } from '@/components/ChatInterface'
+import { AppRoutes } from '@/routes'
 import type { AppData } from '@/types'
 import data from '@/data.json'
 import { loadData } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 import { Lightbulb, ArrowRight, Sun, User, Menu, Moon, Newspaper, BookOpen, Settings, Users, ChevronLeft, AlignJustify, Calendar } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 function App() {
   const [appData, setAppData] = useState<AppData>({
     ...data as AppData,
     regularTasks: (data as AppData).regularTasks || []
   })
-  const [activeSection, setActiveSection] = useState('today')
+  const location = useLocation()
+  const navigate = useNavigate()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
@@ -112,10 +108,6 @@ function App() {
     setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)
   }
 
-  const handleNavigation = (sectionId: string) => {
-    setActiveSection(sectionId)
-    setIsMobileSidebarOpen(false) // Close mobile sidebar when navigating
-  }
 
   const toggleTheme = () => {
     const newTheme = !isDarkMode
@@ -203,34 +195,24 @@ function App() {
 
 
   const navigationItems = [
-    { id: 'tasks', label: 'Tasks', icon: Sun },
-    { id: 'newtoday', label: 'NewToday', icon: Calendar },
-    { id: 'newsfeed', label: 'Newsfeed', icon: Newspaper },
-    { id: 'books', label: 'Books', icon: BookOpen },
-    { id: 'people', label: 'People', icon: Users },
-    { id: 'ideas', label: 'Ideas', icon: Lightbulb },
-    { id: 'pipeline', label: 'Pipeline', icon: ArrowRight },
+    { id: 'tasks', label: 'Tasks', icon: Sun, path: '/tasks' },
+    { id: 'newtoday', label: 'NewToday', icon: Calendar, path: '/newtoday' },
+    { id: 'newsfeed', label: 'Newsfeed', icon: Newspaper, path: '/newsfeed' },
+    { id: 'books', label: 'Books', icon: BookOpen, path: '/books' },
+    { id: 'people', label: 'People', icon: Users, path: '/people' },
+    { id: 'ideas', label: 'Ideas', icon: Lightbulb, path: '/ideas' },
+    { id: 'pipeline', label: 'Pipeline', icon: ArrowRight, path: '/pipeline' },
   ]
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'tasks':
-        return <Tasks data={appData} setData={setAppData}  />
-      case 'newtoday':
-        return <NewTodayView data={appData} setData={setAppData} />
-      case 'newsfeed':
-        return <NewsFeed data={appData} setData={setAppData} user={user} />
-      case 'books':
-        return <Books />
-      case 'people':
-        return <People />
-      case 'ideas':
-        return <IdeaParkingLot data={appData} setData={setAppData} />
-      case 'pipeline':
-        return <ExecutionPipeline data={appData} setData={setAppData} />
-      default:
-        <Tasks data={appData} setData={setAppData} />
-    }
+  const handleNavigation = (path: string) => {
+    navigate(path)
+    setIsMobileSidebarOpen(false)
+  }
+
+  const getCurrentSection = () => {
+    const path = location.pathname
+    const item = navigationItems.find(item => item.path === path)
+    return item ? item.id : 'tasks'
   }
 
   // Show loading screen while initializing
@@ -341,9 +323,9 @@ function App() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleNavigation(item.id)}
+                  onClick={() => handleNavigation(item.path)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-200 ease-in-out hover-lift ${
-                    activeSection === item.id
+                    getCurrentSection() === item.id
                       ? 'bg-green-50 text-green-700 border border-green-200 shadow-sm'
                       : 'text-gray-700 hover:bg-gray-100'
                   } ${
@@ -433,7 +415,7 @@ function App() {
       } ${!isRightSidebarCollapsed ? 'lg:mr-80' : ''}`}>
         <div className="h-full p-4 lg:p-8 pt-16 lg:pt-8">
           <div className="h-full transition-all duration-300 ease-in-out">
-            {renderContent()}
+            <AppRoutes data={appData} setData={setAppData} user={user} />
           </div>
         </div>
       </div>
